@@ -112,7 +112,7 @@ export const AdminDashboard: React.FC = () => {
       value: '12',
       desc: 'Perlu Diproses Dapur',
       icon: <Clock className="w-5 h-5 text-[#D49B42]" />,
-      borderColor: 'border-[#D49B42]'
+      borderColor: 'border-[#3E2C22]'
     },
     {
       title: 'Total Pelanggan',
