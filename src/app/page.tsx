@@ -8,6 +8,7 @@ import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { AdminMenuCrud } from '@/components/admin/AdminMenuCrud';
 import { AdminAiPredictorModal } from '@/components/admin/AdminAiPredictorModal';
 import { ToastContainer } from '@/components/ToastContainer';
+import { Button } from '@/components/ui/Button';
 import { Bot, Sparkles, ArrowRight } from 'lucide-react';
 
 export default function AdminPage() {
@@ -77,13 +78,15 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => setIsAiModalOpen(true)}
-            className="px-4 py-2.5 bg-[#D49B42] hover:bg-[#F3B251] text-[#1E1510] font-extrabold text-xs rounded-xl shadow-md transition-all shrink-0 flex items-center gap-1.5"
+            className="shrink-0 flex items-center gap-1.5"
           >
             <Sparkles className="w-4 h-4" />
             <span>Lihat Konsep AI →</span>
-          </button>
+          </Button>
         </div>
 
         {/* Tab Content */}
