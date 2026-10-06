@@ -15,7 +15,8 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-bold rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles =
+    'inline-flex items-center justify-center font-bold rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
 
   const responsiveWidth = fullWidthMobile ? 'w-full sm:w-auto md:w-auto' : '';
 
@@ -27,7 +28,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-xs sm:text-xs',
+    sm: 'px-3 py-1.5 text-xs',
     md: 'px-4 py-2.5 text-xs sm:text-sm',
     lg: 'px-5 sm:px-6 py-3 sm:py-3.5 text-sm sm:text-base'
   };
