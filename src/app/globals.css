@@ -1,10 +1,23 @@
 @import "tailwindcss";
 
+@theme {
+  --color-heritage-dark: #17110C;
+  --color-heritage-wood: #1E1510;
+  --color-heritage-card: #2A1D16;
+  --color-heritage-border: #3E2C22;
+  --color-heritage-amber: #D49B42;
+  --color-heritage-amber-glow: #F3B251;
+  --color-heritage-forest: #2E7D32;
+  --color-heritage-forest-hover: #388E3C;
+  --color-heritage-cream: #F8F4EC;
+  --color-heritage-tan: #C5B8A8;
+}
+
 @layer base {
   :root {
     --bg-dark-wood: #17110C;
     --bg-wood-card: #241913;
-    --border-wood: #3F2D23;
+    --border-wood: #3E2C22;
     --border-wood-light: #543E31;
     --accent-forest: #2E7D32;
     --accent-forest-hover: #388E3C;
@@ -17,11 +30,11 @@
   body {
     background-color: var(--bg-dark-wood);
     color: var(--text-cream);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - Heritage Style */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -30,14 +43,14 @@
   background: #17110C;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3F2D23;
+  background: #3E2C22;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #D49B42;
 }
 
-/* Custom animations */
+/* Custom Subtle Animations */
 @keyframes pulse-subtle {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.85; transform: scale(1.02); }
@@ -56,4 +69,3 @@
 .animate-pulse-subtle {
   animation: pulse-subtle 3s ease-in-out infinite;
 }
-
