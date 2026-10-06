@@ -94,21 +94,21 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
-          className="w-9 h-9 rounded-xl bg-[#241913] border border-[#3F2D23] flex items-center justify-center text-[#F8F4EC]"
+          className="w-9 h-9 rounded-xl bg-[#241913] border border-[#3F2D23] flex items-center justify-center text-heritage-cream"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div>
-          <h2 className="text-base font-extrabold text-[#F8F4EC]">Form Smart Takeaway</h2>
-          <p className="text-[11px] text-[#C5B8A8]">Atur gerai & slot waktu pengambilan pesanan</p>
+          <h2 className="text-base font-extrabold text-heritage-cream">Form Smart Takeaway</h2>
+          <p className="text-[11px] text-heritage-tan">Atur gerai & slot waktu pengambilan pesanan</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* 1. Radio Card Pilihan Gerai Outlet */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-[#F8F4EC] flex items-center gap-1.5">
-            <MapPin className="w-4 h-4 text-[#D49B42]" /> Pilihan Gerai Outlet
+          <label className="text-xs font-bold text-heritage-cream flex items-center gap-1.5">
+            <MapPin className="w-4 h-4 text-heritage-amber" /> Pilihan Gerai Outlet
           </label>
           <div className="grid grid-cols-1 gap-2.5">
             {outlets.map((outlet) => {
@@ -119,7 +119,7 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
                   onClick={() => setSelectedOutlet(outlet.id as 'celaket' | 'dinoyo')}
                   className={`cursor-pointer p-3.5 rounded-2xl border transition-all flex items-start justify-between ${
                     isSelected
-                      ? 'bg-[#2E7D32]/15 border-[#2E7D32] ring-1 ring-[#2E7D32]'
+                      ? 'bg-heritage-forest/15 border-heritage-forest ring-1 ring-heritage-forest'
                       : 'bg-[#241913] border-[#3F2D23] opacity-80 hover:opacity-100'
                   }`}
                 >
@@ -130,21 +130,21 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
                         name="outlet"
                         checked={isSelected}
                         onChange={() => setSelectedOutlet(outlet.id as 'celaket' | 'dinoyo')}
-                        className="accent-[#2E7D32]"
+                        className="accent-heritage-forest"
                       />
-                      <h4 className="text-xs font-extrabold text-[#F8F4EC]">{outlet.name}</h4>
+                      <h4 className="text-xs font-extrabold text-heritage-cream">{outlet.name}</h4>
                     </div>
-                    <p className="text-[10px] text-[#C5B8A8] pl-5">{outlet.address}</p>
+                    <p className="text-[10px] text-heritage-tan pl-5">{outlet.address}</p>
                     <div className="pl-5 flex items-center gap-2 pt-1">
-                      <span className="text-[9px] font-bold text-[#2E7D32] bg-[#2E7D32]/20 px-2 py-0.5 rounded">
+                      <span className="text-[9px] font-bold text-heritage-forest bg-heritage-forest/20 px-2 py-0.5 rounded">
                         {outlet.status}
                       </span>
-                      <span className="text-[9px] text-[#D49B42] font-semibold">
+                      <span className="text-[9px] text-heritage-amber font-semibold">
                         Estimasi Antrean: {outlet.queue}
                       </span>
                     </div>
                   </div>
-                  {isSelected && <CheckCircle2 className="w-5 h-5 text-[#2E7D32] shrink-0" />}
+                  {isSelected && <CheckCircle2 className="w-5 h-5 text-heritage-forest shrink-0" />}
                 </div>
               );
             })}
@@ -153,8 +153,8 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
 
         {/* 2. Date Picker / Pills Tanggal */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-[#F8F4EC] flex items-center gap-1.5">
-            <Calendar className="w-4 h-4 text-[#D49B42]" /> Tanggal Pengambilan
+          <label className="text-xs font-bold text-heritage-cream flex items-center gap-1.5">
+            <Calendar className="w-4 h-4 text-heritage-amber" /> Tanggal Pengambilan
           </label>
           <div className="grid grid-cols-3 gap-2">
             {dates.map((d) => {
@@ -167,8 +167,8 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
                   onClick={() => setSelectedDate(fullLabel)}
                   className={`py-2.5 px-2 rounded-xl text-center border transition-all ${
                     isSelected
-                      ? 'bg-[#D49B42] text-[#17110C] font-extrabold border-[#D49B42]'
-                      : 'bg-[#241913] text-[#C5B8A8] border-[#3F2D23] hover:text-white'
+                      ? 'bg-heritage-amber text-heritage-dark font-extrabold border-heritage-amber'
+                      : 'bg-[#241913] text-heritage-tan border-[#3F2D23] hover:text-white'
                   }`}
                 >
                   <p className="text-[11px] leading-none">{d.label}</p>
@@ -181,8 +181,8 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
 
         {/* 3. Time Slot Chips */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-[#F8F4EC] flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-[#D49B42]" /> Slot Waktu Pengambilan
+          <label className="text-xs font-bold text-heritage-cream flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-heritage-amber" /> Slot Waktu Pengambilan
           </label>
           <div className="grid grid-cols-2 gap-2">
             {timeSlots.map((slot) => {
@@ -194,8 +194,8 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
                   onClick={() => setSelectedTimeSlot(slot)}
                   className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all text-center ${
                     isSelected
-                      ? 'bg-[#2E7D32] text-white border-[#2E7D32] shadow-md'
-                      : 'bg-[#241913] text-[#C5B8A8] border-[#3F2D23] hover:border-[#D49B42]'
+                      ? 'bg-heritage-forest text-white border-heritage-forest shadow-md'
+                      : 'bg-[#241913] text-heritage-tan border-[#3F2D23] hover:border-heritage-amber'
                   }`}
                 >
                   {slot}
@@ -207,21 +207,21 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
 
         {/* 4. Opsi Catatan Khusus */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-[#F8F4EC] flex items-center gap-1.5">
-            <Edit3 className="w-4 h-4 text-[#D49B42]" /> Catatan Khusus Pesanan
+          <label className="text-xs font-bold text-heritage-cream flex items-center gap-1.5">
+            <Edit3 className="w-4 h-4 text-heritage-amber" /> Catatan Khusus Pesanan
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Contoh: Pisahkan parutan kelapa, gula melaka minta lebih banyak..."
             rows={2}
-            className="w-full bg-[#17110C] border border-[#3F2D23] rounded-xl p-3 text-xs text-[#F8F4EC] focus:outline-none focus:border-[#D49B42] placeholder-[#7E6A5A]"
+            className="w-full bg-heritage-dark border border-[#3F2D23] rounded-xl p-3 text-xs text-heritage-cream focus:outline-none focus:border-heritage-amber placeholder-[#7E6A5A]"
           />
         </div>
 
         {/* Input Identitas Pengambil */}
         <div className="space-y-2 bg-[#241913] p-3.5 rounded-xl border border-[#3F2D23]">
-          <h4 className="text-xs font-bold text-[#D49B42]">Data Pengambil Pesanan</h4>
+          <h4 className="text-xs font-bold text-heritage-amber">Data Pengambil Pesanan</h4>
           <div className="grid grid-cols-1 gap-2">
             <input
               type="text"
@@ -229,7 +229,7 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Nama Pemesan"
               required
-              className="bg-[#17110C] border border-[#3F2D23] rounded-lg p-2 text-xs text-[#F8F4EC]"
+              className="bg-heritage-dark border border-[#3F2D23] rounded-lg p-2 text-xs text-heritage-cream"
             />
             <input
               type="tel"
@@ -237,7 +237,7 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Nomor WhatsApp"
               required
-              className="bg-[#17110C] border border-[#3F2D23] rounded-lg p-2 text-xs text-[#F8F4EC]"
+              className="bg-heritage-dark border border-[#3F2D23] rounded-lg p-2 text-xs text-heritage-cream"
             />
           </div>
         </div>
@@ -245,15 +245,15 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
         {/* Order Summary & Submit Button */}
         <div className="space-y-3 pt-2">
           <div className="bg-[#241913] p-3 rounded-xl border border-[#3F2D23] flex justify-between items-center text-xs">
-            <span className="text-[#C5B8A8]">Total Pembayaran ({cart.reduce((a, b) => a + b.quantity, 0)} item):</span>
-            <span className="text-sm font-extrabold text-[#D49B42]">
+            <span className="text-heritage-tan">Total Pembayaran ({cart.reduce((a, b) => a + b.quantity, 0)} item):</span>
+            <span className="text-sm font-extrabold text-heritage-amber">
               Rp {totalPrice.toLocaleString('id-ID')}
             </span>
           </div>
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-[#2E7D32] hover:bg-[#388E3C] text-white font-extrabold text-xs rounded-xl shadow-xl flex items-center justify-center gap-2 transition-transform active:scale-95"
+            className="w-full py-3.5 bg-heritage-forest hover:bg-heritage-forest-hover text-white font-extrabold text-xs rounded-xl shadow-xl flex items-center justify-center gap-2 transition-transform active:scale-95"
           >
             <ShoppingBag className="w-4 h-4" />
             <span>Buat Tiket Smart Takeaway 🎟️</span>
