@@ -71,7 +71,7 @@ export const LocationView: React.FC = () => {
             
             {/* Map Canvas Left */}
             <div className="lg:col-span-7 bg-[#241913] border border-[#3F2D23] rounded-3xl overflow-hidden shadow-2xl relative flex flex-col justify-between">
-              <div className="relative h-[400px] w-full bg-[#1A1A1A] overflow-hidden flex items-center justify-center">
+              <div className="relative h-64 sm:h-80 lg:h-[400px] w-full bg-[#1A1A1A] overflow-hidden flex items-center justify-center">
                 <svg className="absolute inset-0 w-full h-full opacity-30" xmlns="http://www.w3.org/2000/svg">
                   <path d="M 0 180 L 1000 180" stroke="#3F2D23" strokeWidth="12" />
                   <path d="M 450 0 L 450 500" stroke="#543E31" strokeWidth="10" />
