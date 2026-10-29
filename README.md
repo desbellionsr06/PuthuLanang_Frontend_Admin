@@ -153,6 +153,6 @@ PuthuLanang_Frontend_Admin/
 ---
 
 ## 👨‍💻 Informasi Pengembang (Ujian Tengah Semester)
-- **Mata Kuliah**: Pemrograman Frontend / Frontend Development
+- **Mata Kuliah**: Pemrograman Web Framework
 - **Topik Proyek**: Sistem Admin & Smart Takeaway Puthu Lanang Celaket Malang Est. 1935
 - **Tahun Akademik**: 2026
