@@ -1,78 +1,43 @@
-'use client';
-
 // Route: /login
 // Berada di dalam Route Group (auth) — folder ini tidak memengaruhi URL path.
-// Halaman ini menampilkan form login admin secara standalone.
+// Login admin menggunakan Google OAuth (Auth.js / NextAuth v5).
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Flame, Lock, User, ShieldCheck, ArrowRight } from 'lucide-react';
+import { redirect } from 'next/navigation';
+import { Flame, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { auth, signIn } from '@/auth';
 
-// ─────────────────────────────────────────────────────────────
-// Validasi input form (client-side)
-// ─────────────────────────────────────────────────────────────
-function validateForm(username: string, password: string): string | null {
-  if (!username.trim()) return 'Username wajib diisi.';
-  if (username.trim().length < 3) return 'Username minimal 3 karakter.';
-  if (!password) return 'Password wajib diisi.';
-  if (password.length < 4) return 'Password minimal 4 karakter.';
-  return null;
+const ERROR_MESSAGES: Record<string, string> = {
+  AccessDenied: 'Akun Google ini tidak terdaftar sebagai admin Puthu Lanang.',
+  Configuration: 'Konfigurasi autentikasi server belum lengkap. Hubungi developer.',
+  Verification: 'Tautan verifikasi tidak valid atau sudah kedaluwarsa.',
+};
+
+// Hanya izinkan callback ke rute /admin (hindari open redirect)
+function safeCallbackUrl(raw?: string): string {
+  if (raw && raw.startsWith('/admin') && !raw.startsWith('//')) return raw;
+  return '/admin/dashboard';
 }
 
-// ─────────────────────────────────────────────────────────────
-// Halaman Login Admin — Route: /login
-// ─────────────────────────────────────────────────────────────
-export default function AdminLoginPage() {
-  const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [showPass, setShowPass] = useState(false);
+export default async function AdminLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; callbackUrl?: string }>;
+}) {
+  const { error, callbackUrl } = await searchParams;
+  const redirectTo = safeCallbackUrl(callbackUrl);
 
-  // Jika sudah login (token di localStorage), redirect ke dashboard
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('admin_session');
-      if (token === 'authenticated') {
-        router.replace('/');
-      }
-    }
-  }, [router]);
+  // Sudah login → langsung ke dashboard
+  const session = await auth();
+  if (session?.user) redirect(redirectTo);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg('');
+  const errorMsg = error
+    ? ERROR_MESSAGES[error] ?? 'Login gagal. Silakan coba lagi.'
+    : '';
 
-    // Validasi form dengan error message yang jelas
-    const validationError = validateForm(username, password);
-    if (validationError) {
-      setErrorMsg(validationError);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Simulasi autentikasi admin (username + password statik untuk admin panel)
-      await new Promise((r) => setTimeout(r, 500));
-
-      if (
-        username.trim() === 'admin' &&
-        (password === 'admin' || password === 'admin123' || password.length >= 4)
-      ) {
-        // Simpan sesi admin di localStorage
-        localStorage.setItem('admin_session', 'authenticated');
-        localStorage.setItem('admin_username', username.trim());
-        router.replace('/');
-      } else {
-        setErrorMsg('Username atau Password salah. Gunakan: admin / admin123');
-      }
-    } catch {
-      setErrorMsg('Terjadi kesalahan sistem. Silakan coba lagi.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  async function handleGoogleSignIn() {
+    'use server';
+    await signIn('google', { redirectTo });
+  }
 
   return (
     <div className="min-h-screen bg-[#1E1510] flex items-center justify-center p-4 selection:bg-[#D49B42] selection:text-[#1E1510]">
@@ -94,103 +59,39 @@ export default function AdminLoginPage() {
             ADMIN MANAGEMENT SYSTEM
           </p>
           <p className="text-xs text-[#C5B8A8] pt-1">
-            Silakan masuk untuk mengelola pesanan, stok, dan menu jajanan.
+            Silakan masuk dengan akun Google admin untuk mengelola pesanan, stok, dan menu jajanan.
           </p>
         </div>
 
-        {/* Login Form */}
-        <form onSubmit={handleLogin} className="space-y-4 relative z-10" noValidate>
-
+        <div className="space-y-4 relative z-10">
           {/* Error message */}
           {errorMsg && (
             <div
               role="alert"
               className="p-3 bg-red-900/30 border border-red-700/50 rounded-xl text-xs text-red-200 flex items-start gap-2"
             >
-              <span className="mt-0.5">⚠</span>
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-px" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          {/* Username field */}
-          <div>
-            <label
-              htmlFor="admin-username"
-              className="block text-[11px] font-semibold text-[#C5B8A8] mb-1.5 uppercase tracking-wider"
+          {/* Google Sign-In (server action) */}
+          <form action={handleGoogleSignIn}>
+            <button
+              id="google-signin-button"
+              type="submit"
+              className="w-full py-3.5 bg-[#F8F4EC] hover:bg-white active:scale-[0.98] text-[#1E1510] font-bold rounded-xl shadow-xl transition-all flex items-center justify-center gap-3 text-xs cursor-pointer"
             >
-              Username Admin
-            </label>
-            <div className="relative">
-              <User className="w-4 h-4 text-[#C5B8A8] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                id="admin-username"
-                type="text"
-                autoComplete="username"
-                required
-                placeholder="admin"
-                value={username}
-                onChange={(e) => { setUsername(e.target.value); setErrorMsg(''); }}
-                className="w-full bg-[#1E1510] border border-[#3E2C22] rounded-xl py-3 pl-9 pr-4 text-xs text-[#F8F4EC] placeholder-[#C5B8A8]/60 focus:outline-none focus:border-[#D49B42] focus:ring-1 focus:ring-[#D49B42]/50 transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Password field */}
-          <div>
-            <label
-              htmlFor="admin-password"
-              className="block text-[11px] font-semibold text-[#C5B8A8] mb-1.5 uppercase tracking-wider"
-            >
-              Kata Sandi / Password
-            </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-[#C5B8A8] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                id="admin-password"
-                type={showPass ? 'text' : 'password'}
-                autoComplete="current-password"
-                required
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); setErrorMsg(''); }}
-                className="w-full bg-[#1E1510] border border-[#3E2C22] rounded-xl py-3 pl-9 pr-12 text-xs text-[#F8F4EC] placeholder-[#C5B8A8]/60 focus:outline-none focus:border-[#D49B42] focus:ring-1 focus:ring-[#D49B42]/50 transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPass(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#C5B8A8] hover:text-[#D49B42] text-[10px] font-bold transition-colors"
-                tabIndex={-1}
-              >
-                {showPass ? 'HIDE' : 'SHOW'}
-              </button>
-            </div>
-          </div>
-
-          {/* Demo info */}
-          <div className="p-3 bg-[#1E1510] border border-[#3E2C22] rounded-xl text-[11px] text-[#C5B8A8] flex items-center justify-between">
-            <span>Demo Akses:</span>
-            <span className="font-mono text-[#D49B42] font-bold">admin / admin123</span>
-          </div>
-
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3.5 bg-[#2E7D32] hover:bg-[#388E3C] active:scale-[0.98] text-[#F8F4EC] font-bold rounded-xl shadow-xl transition-all flex items-center justify-center gap-2 group disabled:opacity-50 text-xs cursor-pointer"
-          >
-            {loading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                <span>Memverifikasi Hak Akses...</span>
-              </>
-            ) : (
-              <>
-                <span>Masuk Ke Dashboard Admin</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </>
-            )}
-          </button>
-        </form>
+              <svg className="w-5 h-5" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                <path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.9 7.35 2.56 10.78l7.97-6.19z" />
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+              </svg>
+              <span>Masuk dengan Google</span>
+            </button>
+          </form>
+        </div>
 
         <div className="pt-4 border-t border-[#3E2C22] text-center text-[11px] text-[#C5B8A8] flex items-center justify-center gap-1.5 relative z-10">
           <ShieldCheck className="w-4 h-4 text-[#2E7D32]" />

@@ -38,10 +38,14 @@ Buka peramban (browser) dan akses alamat:
 http://localhost:3000
 ```
 
-### 4. Kredensial Akses Akun Admin
-Aplikasi dilengkapi sistem autentikasi login terproteksi:
-- **Username**: `admin`
-- **Password**: `admin` *(atau `admin123`)*
+### 4. Konfigurasi Environment (Google OAuth & Cloudinary)
+Salin `.env.example` menjadi `.env.local`, lalu isi:
+- `AUTH_SECRET` (`npx auth secret`), `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` dari Google Cloud Console
+  (Authorized redirect URI: `http://localhost:3000/api/auth/callback/google`).
+- `ADMIN_ALLOWED_EMAILS` — email Google admin, dipisah koma.
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` untuk penyimpanan foto menu.
+
+Login di `/login` dengan tombol **Masuk dengan Google**; semua rute `/admin/**` hanya bisa diakses setelah login.
 
 ---
 
@@ -69,33 +73,46 @@ Kode diorganisasi secara modular dan terstruktur (*Clean Architecture*) di dalam
 ```text
 PuthuLanang_Frontend_Admin/
 ├── public/
-│   └── images/                     # Aset gambar menu otentik (Puthu, Klepon, Cenil, Lupis, Hampers)
+│   └── images/                     # Aset gambar bawaan (fallback tampilan)
 ├── src/
+│   ├── auth.ts                     # Konfigurasi Auth.js + Google OAuth + allowlist email
+│   ├── proxy.ts                    # Proteksi rute /admin/** (pengganti middleware di Next 16)
 │   ├── app/
-│   │   ├── globals.css             # Konfigurasi Tailwind CSS v4 & variabel palet warna Heritage
-│   │   ├── layout.tsx              # Root Layout Next.js, metadata SEO, font Plus Jakarta Sans
-│   │   └── page.tsx                # Entry point utama antarmuka Admin (Auth guard & tab controller)
-│   ├── components/
-│   │   ├── admin/                  # Modul komponen khusus manajemen Admin
-│   │   │   ├── AdminDashboard.tsx      # Dashboard metrik KPI, tabel data pesanan, & filter status
-│   │   │   ├── AdminMenuCrud.tsx       # Manajemen formulir tambah/edit & katalog menu aktif
-│   │   │   ├── AdminLogin.tsx          # Tampilan autentikasi admin dengan efek ambient glow
-│   │   │   ├── AdminSidebarNavbar.tsx  # Header & navigasi tab interaktif
-│   │   │   └── AdminAiPredictorModal.tsx # Showcase modal konsep AI Stock & Demand Predictor
-│   │   ├── mobile/                 # Modul pendukung tampilan responsif layar mobile (UTS showcase)
-│   │   ├── views/                  # Modul view pendukung portal konsumen & takeaway
-│   │   ├── AuthModal.tsx           # Modal autentikasi user
-│   │   ├── CartDrawer.tsx          # Drawer keranjang interaktif
-│   │   ├── Navbar.tsx              # Navigasi utama portal
-│   │   ├── Footer.tsx              # Komponen footer informasi gerai
-│   │   └── ToastContainer.tsx      # Komponen notifikasi toast reaktif
+│   │   ├── globals.css
+│   │   ├── layout.tsx              # Root Layout
+│   │   ├── page.tsx                # Redirect ke /admin/dashboard
+│   │   ├── (auth)/login/page.tsx   # Halaman login Google
+│   │   ├── api/
+│   │   │   ├── auth/[...nextauth]/route.ts  # Endpoint Auth.js
+│   │   │   └── upload/route.ts     # Upload gambar ke Cloudinary (butuh login)
+│   │   └── admin/
+│   │       ├── layout.tsx          # Cek sesi (server) + AdminShell
+│   │       ├── dashboard/
+│   │       │   ├── page.tsx        # Merakit section dashboard
+│   │       │   ├── useDashboardData.ts
+│   │       │   └── components/     # Section dashboard (komponen LOKAL)
+│   │       └── kelola/
+│   │           ├── page.tsx        # Merakit section kelola menu
+│   │           ├── useKelolaMenu.ts
+│   │           ├── menuMapper.ts
+│   │           └── components/     # Section kelola menu (komponen LOKAL)
+│   ├── components/                 # Komponen GLOBAL / shared
+│   │   ├── admin/                  # AdminShell, AdminAiPredictorModal, AiFeatureBanner
+│   │   ├── global/                 # AdminSidebarNavbar
+│   │   ├── ui/                     # Button
+│   │   ├── mobile/, views/         # Komponen portal konsumen (legacy)
+│   │   └── ToastContainer.tsx, Navbar.tsx, Footer.tsx, ...
 │   ├── lib/
-│   │   └── db.ts                   # In-memory database, katalog menu statis, & skema TypeScript
+│   │   ├── config.ts               # BACKEND_URL & ADMIN_KEY
+│   │   ├── adminApi.ts             # Service layer ke Backend Express
+│   │   ├── uploadApi.ts            # Helper upload ke Cloud Storage
+│   │   └── db.ts
 │   └── store/
-│       └── useStore.ts             # Global Zustand store (Cart, Auth, Ticket, Filter, & Toasts)
-├── package.json                    # Konfigurasi dependensi dan scripts proyek
-├── tsconfig.json                   # Konfigurasi TypeScript path alias (@/*)
-└── README.md                       # Dokumentasi resmi proyek UTS
+│       └── useStore.ts             # Global Zustand store
+├── .env.example                    # Daftar environment variable
+├── package.json
+├── tsconfig.json                   # Path alias (@/*)
+└── README.md
 ```
 
 ---
@@ -103,8 +120,9 @@ PuthuLanang_Frontend_Admin/
 ## ✨ Fitur-Fitur Utama & Implementasi Teknis
 
 ### 1. 🔐 Admin Authentication Guard
-- Dilengkapi sistem login interaktif (`AdminLogin.tsx`) dengan validasi input dan umpan balik error real-time.
-- State login tersimpan secara aman dalam komponen controller (`page.tsx`) untuk melindungi data operasional.
+- Login menggunakan **Google OAuth** via Auth.js / NextAuth v5 (`src/auth.ts`, halaman `/login`).
+- Rute `/admin/**` dilindungi dua lapis: `src/proxy.ts` (redirect ke `/login`) dan pengecekan sesi di `src/app/admin/layout.tsx`.
+- Hanya email yang terdaftar di `ADMIN_ALLOWED_EMAILS` yang boleh masuk.
 
 ### 2. 📊 Real-Time Operations Dashboard & Order Management
 - **4 Metrik KPI Utama**: Memantau Total Pesanan, Total Menu Aktif, Antrean Pesanan Baru Dapur, dan Total Pelanggan.

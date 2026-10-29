@@ -1,0 +1,70 @@
+src/app/admin/dashboard/components/OrderTable.tsx:50:54 react/no-unescaped-entities | `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+src/app/admin/dashboard/components/OrderTable.tsx:50:69 react/no-unescaped-entities | `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+src/app/admin/dashboard/components/SalesChart.tsx:75:5 react-hooks/set-state-in-effect | Error: Calling setState synchronously within an effect can trigger cascading renders
+src/app/admin/dashboard/useDashboardData.ts:66:5 react-hooks/set-state-in-effect | Error: Calling setState synchronously within an effect can trigger cascading renders
+src/app/admin/kelola/useKelolaMenu.ts:62:5 react-hooks/set-state-in-effect | Error: Calling setState synchronously within an effect can trigger cascading renders
+src/components/AuthModal.tsx:44:14 @typescript-eslint/no-unused-vars | 'err' is defined but never used.
+src/components/Footer.tsx:4:20 @typescript-eslint/no-unused-vars | 'ViewTab' is defined but never used.
+src/components/HeritageTeaserMap.tsx:5:37 @typescript-eslint/no-unused-vars | 'PhoneCall' is defined but never used.
+src/components/Navbar.tsx:5:85 @typescript-eslint/no-unused-vars | 'Ticket' is defined but never used.
+src/components/Navbar.tsx:19:5 @typescript-eslint/no-unused-vars | 'activeTicketId' is assigned a value but never used.
+src/components/admin/AdminAiPredictorModal.tsx:52:15 react/no-unescaped-entities | `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+src/components/admin/AdminAiPredictorModal.tsx:52:240 react/no-unescaped-entities | `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+src/components/mobile/MobileHome.tsx:6:23 @typescript-eslint/no-unused-vars | 'Flame' is defined but never used.
+src/components/mobile/MobileHome.tsx:6:54 @typescript-eslint/no-unused-vars | 'Clock' is defined but never used.
+src/components/mobile/MobileProfile.tsx:4:10 @typescript-eslint/no-unused-vars | 'User' is defined but never used.
+src/components/mobile/MobileTakeawayForm.tsx:9:33 @typescript-eslint/no-explicit-any | Unexpected any. Specify a different type.
+src/components/mobile/MobileTakeawayForm.tsx:64:53 react-hooks/purity | Error: Cannot call impure function during render
+src/components/mobile/MobileTicket.tsx:4:10 @typescript-eslint/no-unused-vars | 'Ticket' is defined but never used.
+src/components/mobile/MobileTicket.tsx:4:18 @typescript-eslint/no-unused-vars | 'QrCode' is defined but never used.
+src/components/mobile/MobileTicket.tsx:4:54 @typescript-eslint/no-unused-vars | 'Sparkles' is defined but never used.
+src/components/mobile/MobileTicket.tsx:7:16 @typescript-eslint/no-explicit-any | Unexpected any. Specify a different type.
+src/components/mobile/MobileTicket.tsx:134:44 @typescript-eslint/no-explicit-any | Unexpected any. Specify a different type.
+src/components/views/CheckoutView.tsx:5:83 @typescript-eslint/no-unused-vars | 'Phone' is defined but never used.
+src/components/views/CheckoutView.tsx:5:90 @typescript-eslint/no-unused-vars | 'Lock' is defined but never used.
+src/components/views/CheckoutView.tsx:5:96 @typescript-eslint/no-unused-vars | 'CheckCircle2' is defined but never used.
+src/components/views/CheckoutView.tsx:39:10 @typescript-eslint/no-unused-vars | 'authPassword' is assigned a value but never used.
+src/components/views/CheckoutView.tsx:39:24 @typescript-eslint/no-unused-vars | 'setAuthPassword' is assigned a value but never used.
+src/components/views/CheckoutView.tsx:121:14 @typescript-eslint/no-unused-vars | 'err' is defined but never used.
+src/components/views/CheckoutView.tsx:279:62 @typescript-eslint/no-explicit-any | Unexpected any. Specify a different type.
+src/components/views/CustomEventView.tsx:5:10 @typescript-eslint/no-unused-vars | 'Gift' is defined but never used.
+src/components/views/CustomEventView.tsx:5:16 @typescript-eslint/no-unused-vars | 'Calendar' is defined but never used.
+src/components/views/CustomEventView.tsx:5:26 @typescript-eslint/no-unused-vars | 'Clock' is defined but never used.
+src/components/views/CustomEventView.tsx:5:33 @typescript-eslint/no-unused-vars | 'Sliders' is defined but never used.
+src/components/views/CustomEventView.tsx:5:42 @typescript-eslint/no-unused-vars | 'CheckCircle2' is defined but never used.
+src/components/views/CustomEventView.tsx:5:71 @typescript-eslint/no-unused-vars | 'ArrowRight' is defined but never used.
+src/components/views/CustomEventView.tsx:5:83 @typescript-eslint/no-unused-vars | 'ShieldCheck' is defined but never used.
+src/components/views/CustomEventView.tsx:5:96 @typescript-eslint/no-unused-vars | 'Truck' is defined but never used.
+src/components/views/CustomEventView.tsx:16:22 @typescript-eslint/no-unused-vars | 'setPuthuRatio' is assigned a value but never used.
+src/components/views/CustomEventView.tsx:17:23 @typescript-eslint/no-unused-vars | 'setKleponRatio' is assigned a value but never used.
+src/components/views/CustomEventView.tsx:18:22 @typescript-eslint/no-unused-vars | 'setCenilRatio' is assigned a value but never used.
+src/components/views/CustomEventView.tsx:19:22 @typescript-eslint/no-unused-vars | 'setLupisRatio' is assigned a value but never used.
+src/components/views/CustomEventView.tsx:22:10 @typescript-eslint/no-unused-vars | 'loading' is assigned a value but never used.
+src/components/views/CustomEventView.tsx:22:19 @typescript-eslint/no-unused-vars | 'setLoading' is assigned a value but never used.
+src/components/views/CustomEventView.tsx:147:59 @typescript-eslint/no-explicit-any | Unexpected any. Specify a different type.
+src/components/views/HeritageView.tsx:5:10 @typescript-eslint/no-unused-vars | 'History' is defined but never used.
+src/components/views/HeritageView.tsx:5:19 @typescript-eslint/no-unused-vars | 'Flame' is defined but never used.
+src/components/views/HeritageView.tsx:5:26 @typescript-eslint/no-unused-vars | 'Sparkles' is defined but never used.
+src/components/views/HeritageView.tsx:5:36 @typescript-eslint/no-unused-vars | 'Award' is defined but never used.
+src/components/views/HeritageView.tsx:5:43 @typescript-eslint/no-unused-vars | 'ArrowRight' is defined but never used.
+src/components/views/HeritageView.tsx:5:55 @typescript-eslint/no-unused-vars | 'ShieldCheck' is defined but never used.
+src/components/views/HeritageView.tsx:5:68 @typescript-eslint/no-unused-vars | 'Heart' is defined but never used.
+src/components/views/HeritageView.tsx:8:11 @typescript-eslint/no-unused-vars | 'setActiveView' is assigned a value but never used.
+src/components/views/HeritageView.tsx:107:21 react/no-unescaped-entities | `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+src/components/views/HeritageView.tsx:107:97 react/no-unescaped-entities | `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+src/components/views/HomeView.tsx:7:29 @typescript-eslint/no-unused-vars | 'Info' is defined but never used.
+src/components/views/HomeView.tsx:7:73 @typescript-eslint/no-unused-vars | 'Clock' is defined but never used.
+src/components/views/HomeView.tsx:7:92 @typescript-eslint/no-unused-vars | 'ShieldCheck' is defined but never used.
+src/components/views/HomeView.tsx:7:105 @typescript-eslint/no-unused-vars | 'Check' is defined but never used.
+src/components/views/HomeView.tsx:434:19 react/no-unescaped-entities | `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+src/components/views/HomeView.tsx:434:236 react/no-unescaped-entities | `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.
+src/components/views/LocationView.tsx:5:52 @typescript-eslint/no-unused-vars | 'Flame' is defined but never used.
+src/components/views/LocationView.tsx:5:66 @typescript-eslint/no-unused-vars | 'CheckCircle2' is defined but never used.
+src/components/views/MenuView.tsx:7:29 @typescript-eslint/no-unused-vars | 'Info' is defined but never used.
+src/components/views/MenuView.tsx:10:35 @typescript-eslint/no-unused-vars | 'setSearchQuery' is assigned a value but never used.
+src/components/views/TicketView.tsx:5:10 @typescript-eslint/no-unused-vars | 'QrCode' is defined but never used.
+src/components/views/TicketView.tsx:5:18 @typescript-eslint/no-unused-vars | 'CheckCircle2' is defined but never used.
+src/components/views/TicketView.tsx:9:48 @typescript-eslint/no-explicit-any | Unexpected any. Specify a different type.
+src/components/views/TicketView.tsx:35:5 react-hooks/set-state-in-effect | Error: Calling setState synchronously within an effect can trigger cascading renders
+src/components/views/TicketView.tsx:36:6 react-hooks/exhaustive-deps | React Hook useEffect has a missing dependency: 'fetchTicket'. Either include it or remove the dependency array
+src/components/views/TicketView.tsx:171:48 @typescript-eslint/no-explicit-any | Unexpected any. Specify a different type.
