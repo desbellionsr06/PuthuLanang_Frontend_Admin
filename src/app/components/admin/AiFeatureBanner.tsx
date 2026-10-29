@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Bot, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/app/components/ui/Button';
 
 interface AiFeatureBannerProps {
   onOpenAiModal: () => void;

@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AdminDashboard } from '@/components/admin/AdminDashboard';
-import { AdminSidebarNavbar } from '@/components/global/AdminSidebarNavbar';
-import { AdminMenuCrud } from '@/components/admin/AdminMenuCrud';
-import { AdminAiPredictorModal } from '@/components/admin/AdminAiPredictorModal';
-import { AiFeatureBanner } from '@/components/admin/AiFeatureBanner';
-import { ToastContainer } from '@/components/ToastContainer';
+import { AdminDashboard } from '@/app/components/admin/AdminDashboard';
+import { AdminSidebarNavbar } from '@/app/components/global/AdminSidebarNavbar';
+import { AdminMenuCrud } from '@/app/components/admin/AdminMenuCrud';
+import { AdminAiPredictorModal } from '@/app/components/admin/AdminAiPredictorModal';
+import { AiFeatureBanner } from '@/app/components/admin/AiFeatureBanner';
+import { ToastContainer } from '@/app/components/ToastContainer';
 import { AdminTab } from '@/types';
 
 interface DashboardScreenProps {

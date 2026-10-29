@@ -16,12 +16,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, LogOut } from 'lucide-react';
 
-import { AdminSidebarNavbar } from '@/components/global/AdminSidebarNavbar';
-import { AdminDashboard } from '@/components/admin/AdminDashboard';
-import { AdminMenuCrud } from '@/components/admin/AdminMenuCrud';
-import { AdminAiPredictorModal } from '@/components/admin/AdminAiPredictorModal';
-import { AiFeatureBanner } from '@/components/admin/AiFeatureBanner';
-import { ToastContainer } from '@/components/ToastContainer';
+import { AdminSidebarNavbar } from '@/app/components/global/AdminSidebarNavbar';
+import { AdminDashboard } from '@/app/components/admin/AdminDashboard';
+import { AdminMenuCrud } from '@/app/components/admin/AdminMenuCrud';
+import { AdminAiPredictorModal } from '@/app/components/admin/AdminAiPredictorModal';
+import { AiFeatureBanner } from '@/app/components/admin/AiFeatureBanner';
+import { ToastContainer } from '@/app/components/ToastContainer';
 import { AdminTab } from '@/types';
 
 export default function AdminPage() {

@@ -36,6 +36,8 @@ interface MenuFormProps {
   onResetForm: () => void;
   // Props baru: gambar item yang sedang diedit
   previewImage?: string;
+  // Callback: meneruskan file asli yang dipilih user ke parent (AdminMenuCrud)
+  onFileSelected?: (file: File | null) => void;
 }
 
 export const MenuForm: React.FC<MenuFormProps> = ({
@@ -55,11 +57,41 @@ export const MenuForm: React.FC<MenuFormProps> = ({
   onSaveMenu,
   onResetForm,
   previewImage,
+  onFileSelected,
 }) => {
   // Gambar preview: dari props (edit) atau auto-resolve dari nama menu (add)
   const autoPreview = name.trim().length >= 3 ? resolvePreviewImage(name, category) : null;
   const displayImage = previewImage || autoPreview;
   const [imgError, setImgError] = useState(false);
+
+  // State untuk gambar yang diupload manual oleh user
+  const [manualImage, setManualImage] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Gambar final: manual upload > previewImage (edit) > auto-resolve
+  const finalImage = manualImage || displayImage;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Validasi: hanya file gambar
+    if (!file.type.startsWith('image/')) return;
+    const objectUrl = URL.createObjectURL(file);
+    setManualImage(objectUrl);
+    setImgError(false);
+    // Teruskan file asli ke parent (AdminMenuCrud) agar bisa dikirim ke backend
+    onFileSelected?.(file);
+    // Reset nilai input file agar file yang sama bisa dipilih ulang
+    e.target.value = '';
+  };
+
+  const handleResetManualImage = () => {
+    if (manualImage) URL.revokeObjectURL(manualImage);
+    setManualImage(null);
+    setImgError(false);
+    // Beritahu parent bahwa tidak ada lagi file yang dipilih
+    onFileSelected?.(null);
+  };
 
   return (
     <div className="bg-[#2A1D16] border border-[#3E2C22] rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5">
@@ -79,30 +111,77 @@ export const MenuForm: React.FC<MenuFormProps> = ({
         )}
       </div>
 
-      {/* Preview Foto Menu */}
-      {displayImage && !imgError ? (
-        <div className="relative w-full h-36 rounded-xl overflow-hidden bg-[#1E1510] border border-[#3E2C22]">
-          <img
-            src={displayImage}
-            alt={name || 'Preview menu'}
-            onError={() => setImgError(true)}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1E1510]/80 via-transparent to-transparent" />
-          <div className="absolute bottom-2 left-3 right-3">
-            <p className="text-[10px] text-[#C5B8A8] font-bold uppercase tracking-wide">
-              {editingId ? '📷 Foto Saat Ini' : '📷 Preview Foto'}
-            </p>
-            {name && (
-              <p className="text-xs text-[#F8F4EC] font-extrabold truncate">{name}</p>
+      {/* Input file tersembunyi untuk upload gambar manual */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {/* Preview Foto Menu — klik untuk upload gambar manual */}
+      {finalImage && !imgError ? (
+        <div className="space-y-2">
+          <div
+            className="relative w-full h-36 rounded-xl overflow-hidden bg-[#1E1510] border border-[#3E2C22] cursor-pointer group"
+            onClick={() => fileInputRef.current?.click()}
+            title="Klik untuk mengganti foto"
+          >
+            <img
+              src={finalImage}
+              alt={name || 'Preview menu'}
+              onError={() => setImgError(true)}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1E1510]/80 via-transparent to-transparent" />
+            {/* Overlay hover: tampilkan ikon ganti foto */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/40">
+              <div className="flex flex-col items-center gap-1 text-white">
+                <ImageIcon className="w-6 h-6" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Ganti Foto</span>
+              </div>
+            </div>
+            <div className="absolute bottom-2 left-3 right-3">
+              <p className="text-[10px] text-[#C5B8A8] font-bold uppercase tracking-wide">
+                {manualImage ? '🖼️ Foto Diunggah Manual' : editingId ? '📷 Foto Saat Ini' : '📷 Preview Foto Otomatis'}
+              </p>
+              {name && (
+                <p className="text-xs text-[#F8F4EC] font-extrabold truncate">{name}</p>
+              )}
+            </div>
+          </div>
+          {/* Tombol aksi foto */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-1 py-2 bg-[#1E1510] border border-[#3E2C22] hover:border-[#D49B42]/60 text-[#C5B8A8] hover:text-[#F8F4EC] text-[11px] font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-1.5"
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+              Upload Foto Manual
+            </button>
+            {manualImage && (
+              <button
+                type="button"
+                onClick={handleResetManualImage}
+                className="px-3 py-2 bg-[#1E1510] border border-[#3E2C22] hover:border-red-500/60 text-[#C5B8A8] hover:text-red-400 text-[11px] font-bold rounded-xl transition-all active:scale-95"
+                title="Kembali ke foto otomatis"
+              >
+                Reset
+              </button>
             )}
           </div>
         </div>
       ) : (
-        <div className="w-full h-24 rounded-xl bg-[#1E1510] border border-dashed border-[#3E2C22] flex flex-col items-center justify-center gap-1.5">
-          <ImageIcon className="w-6 h-6 text-[#C5B8A8]/40" />
-          <p className="text-[10px] text-[#C5B8A8]/60">
-            Ketik nama menu untuk melihat preview foto
+        <div
+          className="w-full h-24 rounded-xl bg-[#1E1510] border border-dashed border-[#3E2C22] hover:border-[#D49B42]/60 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all group"
+          onClick={() => fileInputRef.current?.click()}
+          title="Klik untuk mengunggah foto"
+        >
+          <ImageIcon className="w-6 h-6 text-[#C5B8A8]/40 group-hover:text-[#D49B42]/70 transition-colors" />
+          <p className="text-[10px] text-[#C5B8A8]/60 group-hover:text-[#C5B8A8] transition-colors">
+            {imgError ? 'Klik untuk mengunggah foto manual' : 'Ketik nama menu untuk preview otomatis, atau klik untuk upload'}
           </p>
         </div>
       )}

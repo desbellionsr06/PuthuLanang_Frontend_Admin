@@ -22,6 +22,9 @@ function resolveImageUrl(rawPath: string | undefined, menuId?: string | number):
   // Jika sudah berupa URL absolut (http/https), gunakan langsung
   if (rawPath.startsWith('http')) return rawPath;
 
+  // Path hasil upload manual backend: "/uploads/menu-xxx.jpg" → URL penuh backend
+  if (rawPath.startsWith('/uploads/')) return `http://localhost:5000${rawPath}`;
+
   // Konversi path Flutter "assets/images/xxx.png" → "/images/xxx.png"
   if (rawPath.startsWith('assets/images/')) {
     return '/' + rawPath.replace('assets/', '');
@@ -100,6 +103,8 @@ export const AdminMenuCrud: React.FC = () => {
   const [preparationTimeMins, setPreparationTimeMins] = useState<number | ''>(10);
   const [portionDetails, setPortionDetails] = useState('');
   const [description, setDescription] = useState('');
+  // File gambar yang dipilih user dari komponen MenuForm
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
   // ----------------------------------------------------------------
   // Load menu dari backend
@@ -137,6 +142,7 @@ export const AdminMenuCrud: React.FC = () => {
     setPreparationTimeMins(10);
     setPortionDetails('');
     setDescription('');
+    setSelectedImageFile(null);
   };
 
   // ----------------------------------------------------------------
@@ -181,6 +187,16 @@ export const AdminMenuCrud: React.FC = () => {
           return;
         }
 
+        // ── Upload gambar manual jika user memilih file baru ───────────
+        if (selectedImageFile) {
+          const formData = new FormData();
+          formData.append('image', selectedImageFile);
+          await fetch(
+            `${BACKEND_URL}/api/admin/menu/${editingId}/image?admin_key=${ADMIN_KEY}`,
+            { method: 'PATCH', headers: { 'X-Admin-Key': ADMIN_KEY }, body: formData }
+          );
+        }
+
         addToast(`✅ Menu "${name}" berhasil diperbarui di database!`, 'success');
         await loadMenu(); // re-fetch agar UI sinkron dengan DB
 
@@ -211,6 +227,17 @@ export const AdminMenuCrud: React.FC = () => {
             'warning'
           );
           return;
+        }
+
+        // ── Upload gambar manual untuk menu baru jika ada ──────────────
+        const newMenuId = json.data?.id;
+        if (selectedImageFile && newMenuId) {
+          const formData = new FormData();
+          formData.append('image', selectedImageFile);
+          await fetch(
+            `${BACKEND_URL}/api/admin/menu/${newMenuId}/image?admin_key=${ADMIN_KEY}`,
+            { method: 'PATCH', headers: { 'X-Admin-Key': ADMIN_KEY }, body: formData }
+          );
         }
 
         // ✅ Sukses: notifikasi + re-fetch daftar menu agar langsung muncul
@@ -328,6 +355,7 @@ export const AdminMenuCrud: React.FC = () => {
             onSaveMenu={handleSaveMenu}
             onResetForm={resetForm}
             previewImage={editingImage}
+            onFileSelected={setSelectedImageFile}
           />
           {isSaving && (
             <div className="mt-3 flex items-center gap-2 text-xs text-[#D49B42]">
