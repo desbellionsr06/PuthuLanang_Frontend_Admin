@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AdminDashboard } from '@/components/admin/AdminDashboard';
 import { AdminSidebarNavbar, AdminTab } from '@/components/admin/AdminSidebarNavbar';
 import { AdminMenuCrud } from '@/components/admin/AdminMenuCrud';
@@ -20,12 +20,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onLogout,
   onGoToCustomerWeb
 }) => {
-  const [activeTab, setActiveTab] = React.useState<AdminTab>('dashboard');
-  const [isAiModalOpen, setIsAiModalOpen] = React.useState(false);
+  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#1E1510] text-[#F8F4EC] flex flex-col selection:bg-[#D49B42] selection:text-[#1E1510] overflow-x-hidden">
-      {/* Header & Sticky Navigation */}
       <AdminSidebarNavbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -35,9 +34,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         adminUsername={adminUsername}
       />
 
-      {/* Main Container dengan Flexbox dan CSS Grid Responsif */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 pb-16">
-        {/* Banner Rencana Fitur AI */}
         <section className="bg-gradient-to-r from-[#2A1D16] via-[#2E7D32]/25 to-[#2A1D16] border border-[#D49B42]/50 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#D49B42]/20 border border-[#D49B42]/40 flex items-center justify-center text-[#D49B42] shrink-0">
@@ -69,14 +66,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           </Button>
         </section>
 
-        {/* Dynamic Responsive Tab View */}
         <div className="w-full overflow-hidden">
           {activeTab === 'dashboard' && <AdminDashboard />}
           {activeTab === 'menu_crud' && <AdminMenuCrud />}
         </div>
       </main>
 
-      {/* AI Modal & Notifications */}
       <AdminAiPredictorModal
         isOpen={isAiModalOpen}
         onClose={() => setIsAiModalOpen(false)}

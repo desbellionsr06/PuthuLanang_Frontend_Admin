@@ -1,7 +1,3 @@
-/**
- * Domain Models & Types - Puthu Lanang Management System
- */
-
 export type MenuCategory = 'pusaka' | 'paling_laris' | 'besek' | 'paket_campur';
 
 export type OrderStatus = 'Baru' | 'Diproses' | 'Selesai' | 'Dibatalkan';
