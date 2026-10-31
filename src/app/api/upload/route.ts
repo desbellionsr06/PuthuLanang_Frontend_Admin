@@ -14,23 +14,36 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 export async function POST(req: Request) {
 
-  // 1. Konfigurasi Cloudinary
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
-  if (!cloudName || !uploadPreset) {
+  // 1. Konfigurasi Cloudinary (cloud name dari env server)
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) {
     return NextResponse.json(
-      { error: 'Cloudinary belum dikonfigurasi. Isi CLOUDINARY_CLOUD_NAME dan CLOUDINARY_UPLOAD_PRESET di .env.local.' },
+      { error: 'Cloudinary belum dikonfigurasi. Isi CLOUDINARY_CLOUD_NAME di .env.local.' },
       { status: 500 }
     );
   }
 
   // 2. Validasi file
   let file: FormDataEntryValue | null;
+  let presetFromForm: FormDataEntryValue | null;
   try {
     const form = await req.formData();
     file = form.get('file');
+    presetFromForm = form.get('upload_preset');
   } catch {
     return NextResponse.json({ error: 'Request upload tidak valid.' }, { status: 400 });
+  }
+
+  // Preset: env server → env publik → field dari form client
+  const uploadPreset =
+    process.env.CLOUDINARY_UPLOAD_PRESET ||
+    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
+    (typeof presetFromForm === 'string' ? presetFromForm : '');
+  if (!uploadPreset) {
+    return NextResponse.json(
+      { error: 'Cloudinary belum dikonfigurasi. Isi NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET di .env.local.' },
+      { status: 500 }
+    );
   }
 
   if (!(file instanceof File)) {

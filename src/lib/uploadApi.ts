@@ -13,6 +13,12 @@ export async function uploadImageToCloud(file: File): Promise<string> {
   const formData = new FormData();
   formData.append('file', file);
 
+  // Upload preset Cloudinary (unsigned), dikonfigurasi via environment variable.
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  if (uploadPreset) {
+    formData.append('upload_preset', uploadPreset);
+  }
+
   const res = await fetch('/api/upload', { method: 'POST', body: formData });
   const json = await res.json().catch(() => ({}));
 

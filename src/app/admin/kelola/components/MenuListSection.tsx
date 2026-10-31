@@ -23,7 +23,7 @@ export const MenuListSection: React.FC<MenuListSectionProps> = ({
     <div className="lg:col-span-7 space-y-4">
       <div className="bg-[#2A1D16] border border-[#3E2C22] rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
         <h2 className="text-sm sm:text-base font-bold text-[#F8F4EC] flex items-center gap-2">
-          <Flame className="w-4 h-4 text-[#D49B42]" /> Daftar Menu Aktif (dari Database)
+          <Flame className="w-4 h-4 text-[#D49B42]" /> Daftar Menu Aktif
         </h2>
 
         {isLoading ? (

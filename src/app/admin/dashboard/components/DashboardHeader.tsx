@@ -1,8 +1,23 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
+const formatTanggalHariIni = () =>
+  new Date().toLocaleDateString('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
 
 export const DashboardHeader: React.FC = () => {
+  // Diisi setelah mount agar tidak terjadi hydration mismatch (server vs client)
+  const [tanggal, setTanggal] = useState('');
+
+  useEffect(() => {
+    setTanggal(formatTanggalHariIni());
+  }, []);
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#2A1D16] border border-[#3E2C22] p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl">
       <div className="space-y-1">
@@ -20,7 +35,7 @@ export const DashboardHeader: React.FC = () => {
       </div>
 
       <div className="text-left sm:text-right text-xs text-[#C5B8A8] bg-[#1E1510] px-3.5 py-2 rounded-xl border border-[#3E2C22] shrink-0">
-        Tanggal Hari Ini: <span className="text-[#D49B42] font-bold block sm:inline">Rabu, 30 September 2026</span>
+        Tanggal Hari Ini: <span className="text-[#D49B42] font-bold block sm:inline" suppressHydrationWarning>{tanggal}</span>
       </div>
     </div>
   );
