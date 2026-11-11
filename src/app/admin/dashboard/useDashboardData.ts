@@ -9,8 +9,10 @@ import {
   fetchAdminOrders,
   updateOrderStatus,
   fetchAdminStats,
+  fetchAiStats,
   BackendOrder,
   AdminStats,
+  AiVerificationStats,
 } from '@/lib/adminApi';
 
 // Interval polling (dalam milidetik) — setiap 8 detik
@@ -30,10 +32,24 @@ function mapBackendToAdminOrder(o: BackendOrder): AdminOrderModel {
   };
 }
 
+async function fetchDashboardBundle() {
+  const [ordersData, statsData, aiStatsData] = await Promise.all([
+    fetchAdminOrders(),
+    fetchAdminStats(),
+    fetchAiStats().catch(() => null),
+  ]);
+  return {
+    orders: ordersData.map(mapBackendToAdminOrder),
+    stats: statsData,
+    aiStats: aiStatsData,
+  };
+}
+
 export function useDashboardData() {
   const [orders, setOrders] = useState<AdminOrderModel[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('Semua');
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [aiStats, setAiStats] = useState<AiVerificationStats | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -45,12 +61,10 @@ export function useDashboardData() {
     if (showRefreshIndicator) setIsRefreshing(true);
     setError(null);
     try {
-      const [ordersData, statsData] = await Promise.all([
-        fetchAdminOrders(),
-        fetchAdminStats(),
-      ]);
-      setOrders(ordersData.map(mapBackendToAdminOrder));
-      setStats(statsData);
+      const bundle = await fetchDashboardBundle();
+      setOrders(bundle.orders);
+      setStats(bundle.stats);
+      setAiStats(bundle.aiStats);
       setLastUpdated(new Date());
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Gagal terhubung ke backend.';
@@ -63,9 +77,32 @@ export function useDashboardData() {
 
   // Load awal + polling otomatis
   useEffect(() => {
-    loadData();
-    const interval = setInterval(() => loadData(), POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
+    let active = true;
+    const syncInitial = async () => {
+      try {
+        const bundle = await fetchDashboardBundle();
+        if (!active) return;
+        setOrders(bundle.orders);
+        setStats(bundle.stats);
+        setAiStats(bundle.aiStats);
+        setError(null);
+        setLastUpdated(new Date());
+      } catch (err: unknown) {
+        if (!active) return;
+        const message = err instanceof Error ? err.message : 'Gagal terhubung ke backend.';
+        setError(message);
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+    void syncInitial();
+    const interval = setInterval(() => {
+      void loadData();
+    }, POLL_INTERVAL_MS);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, [loadData]);
 
   // Filter pesanan berdasarkan status
@@ -90,6 +127,7 @@ export function useDashboardData() {
 
   return {
     stats,
+    aiStats,
     filteredOrders,
     statusFilter,
     setStatusFilter,

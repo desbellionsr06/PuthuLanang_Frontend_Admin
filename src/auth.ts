@@ -11,12 +11,14 @@
 import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
 
-// Daftar email yang boleh masuk ke panel admin.
+// Daftar email yang boleh masuk ke panel admin (whitelist dari env).
+// Mendukung banyak email dipisah koma (atau titik koma / baris baru),
+// serta toleran terhadap spasi, tanda kutip, dan perbedaan huruf besar/kecil.
 // Jika env kosong → semua login ditolak (aman secara default).
 function getAllowedEmails(): string[] {
   return (process.env.ADMIN_ALLOWED_EMAILS ?? '')
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
+    .split(/[,;\n]/)
+    .map((e) => e.trim().replace(/^['"]|['"]$/g, '').trim().toLowerCase())
     .filter(Boolean);
 }
 
@@ -29,15 +31,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: '/login', // error (mis. AccessDenied) ditampilkan di halaman login
   },
   callbacks: {
-    // Dipanggil setelah Google berhasil mengautentikasi user.
-    // Return false → login ditolak (redirect ke /login?error=AccessDenied).
-    signIn({ account, profile }) {
+    // Whitelist: email dari profil Google dicocokkan dengan ADMIN_ALLOWED_EMAILS.
+    // Cocok → true (boleh login, termasuk saat pertama kali, tanpa akun di DB).
+    // Tidak cocok → false (redirect ke /login?error=AccessDenied).
+    signIn({ account, profile, user }) {
       if (account?.provider !== 'google') return false;
 
-      const email = profile?.email?.toLowerCase();
+      const email = (profile?.email ?? user?.email)?.trim().toLowerCase();
       if (!email || profile?.email_verified === false) return false;
 
-      return getAllowedEmails().includes(email);
+      const allowed = getAllowedEmails().includes(email);
+      if (!allowed && process.env.NODE_ENV !== 'production') {
+        console.warn(
+          `[auth] Login ditolak untuk "${email}". Whitelist saat ini: [${getAllowedEmails().join(', ')}]`
+        );
+      }
+      return allowed;
     },
   },
 });

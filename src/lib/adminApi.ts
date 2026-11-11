@@ -1,22 +1,74 @@
 // =============================================================
-// adminApi.ts — Service layer untuk Admin Panel
-// Semua request ke backend berpusat di sini.
-// Endpoint backend TIDAK diubah; hanya pemanggilan fetch yang dirapikan.
+// adminApi.ts — Service layer untuk Admin Panel (Pemantau/Manajer)
+// Menggunakan Bearer JWT token (role: 'manager') yang ditukar dari sesi
+// NextAuth via /api/admin/session-token, sambil menjaga kompatibilitas
+// endpoint backend yang sudah berjalan.
 // =============================================================
 
 import { BACKEND_URL, ADMIN_KEY } from '@/lib/config';
 
-const adminHeaders: HeadersInit = {
-  'Content-Type': 'application/json',
-  'X-Admin-Key': ADMIN_KEY,
-};
+let cachedManagerJwt: string | null = null;
+let pendingTokenPromise: Promise<string | null> | null = null;
+
+async function getManagerJwtToken(): Promise<string | null> {
+  if (cachedManagerJwt) return cachedManagerJwt;
+
+  if (typeof window !== 'undefined') {
+    const stored = sessionStorage.getItem('manager_jwt_token');
+    if (stored) {
+      cachedManagerJwt = stored;
+      return stored;
+    }
+  }
+
+  if (!pendingTokenPromise) {
+    pendingTokenPromise = fetch('/api/admin/session-token', { cache: 'no-store' })
+      .then(async (res) => {
+        if (!res.ok) return null;
+        const json = await res.json();
+        const token = typeof json.jwt_token === 'string' ? json.jwt_token : null;
+        if (token && typeof window !== 'undefined') {
+          cachedManagerJwt = token;
+          sessionStorage.setItem('manager_jwt_token', token);
+        }
+        return token;
+      })
+      .catch(() => null)
+      .finally(() => {
+        pendingTokenPromise = null;
+      });
+  }
+
+  return pendingTokenPromise;
+}
+
+export function clearCachedManagerJwt(): void {
+  cachedManagerJwt = null;
+  if (typeof window !== 'undefined') {
+    sessionStorage.removeItem('manager_jwt_token');
+  }
+}
+
+async function buildAdminHeaders(includeJsonContentType = true): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {
+    'X-Admin-Key': ADMIN_KEY,
+  };
+  if (includeJsonContentType) {
+    headers['Content-Type'] = 'application/json';
+  }
+  const jwt = await getManagerJwtToken();
+  if (jwt) {
+    headers['Authorization'] = `Bearer ${jwt}`;
+  }
+  return headers;
+}
 
 // ---------------------------------------------------------------
 // Tipe data dari backend
 // ---------------------------------------------------------------
 export interface BackendOrder {
   id: number;
-  order_id: string;          // 'ORD-{id}'
+  order_id: string;
   qr_code_token: string;
   antrean: number;
   status: string;
@@ -39,7 +91,6 @@ export interface BackendMenu {
   price: number;
   stock?: number;
   rating?: string | number;
-  // Kolom tambahan dari ensureMenuSchema
   nama?: string;
   harga?: number;
   kategori?: string;
@@ -70,7 +121,6 @@ export interface SalesChartData {
   revenue: number[];
 }
 
-// Payload untuk POST /api/admin/menu (field `image` berisi URL Cloud Storage)
 export interface MenuPayload {
   name: string;
   price: number;
@@ -80,7 +130,6 @@ export interface MenuPayload {
   image?: string;
 }
 
-// Payload untuk PATCH /api/admin/menu/:id (backend tidak menerima `image`)
 export interface MenuUpdatePayload {
   name?: string;
   price?: number;
@@ -88,21 +137,49 @@ export interface MenuUpdatePayload {
   description?: string;
 }
 
-// Helper: ambil pesan error dari respons backend
+// ---------------------------------------------------------------
+// Tipe data AI Logs & Verifikasi Manual Manajer
+// ---------------------------------------------------------------
+export type AiFeatureType = 'queue_estimator' | 'menu_recommendation';
+export type AiVerificationStatus = 'pending' | 'verified' | 'rejected';
+
+export interface AiLogItem {
+  id: number;
+  feature_type: AiFeatureType;
+  requested_by_user_id: number | null;
+  requested_by_name: string | null;
+  anonymized_input: Record<string, unknown>;
+  validated_output: Record<string, unknown>;
+  confidence_score: string | null;
+  verification_status: AiVerificationStatus;
+  verified_by_name?: string | null;
+  verification_notes: string | null;
+  verified_at: string | null;
+  created_at: string;
+}
+
+export interface AiVerificationStats {
+  total_logs: number;
+  pending_count: number;
+  verified_count: number;
+  rejected_count: number;
+  verification_rate_pct: number;
+}
+
 async function readError(res: Response, fallback: string): Promise<string> {
   const json = await res.json().catch(() => ({}));
   return json.error || json.message || `${fallback}: ${res.status}`;
 }
 
 // ---------------------------------------------------------------
-// Fetch semua pesanan (opsional filter status)
+// Pesanan & Statistik Dashboard
 // ---------------------------------------------------------------
 export async function fetchAdminOrders(status?: string): Promise<BackendOrder[]> {
   const params = new URLSearchParams({ admin_key: ADMIN_KEY });
   if (status && status !== 'Semua') params.set('status', status);
 
   const res = await fetch(`${BACKEND_URL}/api/admin/orders?${params}`, {
-    headers: adminHeaders,
+    headers: await buildAdminHeaders(),
     cache: 'no-store',
   });
 
@@ -111,31 +188,24 @@ export async function fetchAdminOrders(status?: string): Promise<BackendOrder[]>
   return json.data as BackendOrder[];
 }
 
-// ---------------------------------------------------------------
-// Ubah status pesanan
-// ---------------------------------------------------------------
 export async function updateOrderStatus(orderId: string, status: string): Promise<void> {
-  // orderId boleh 'ORD-5' atau '5'
   const numericId = orderId.replace(/^ORD-/i, '');
 
   const res = await fetch(`${BACKEND_URL}/api/admin/orders/${numericId}/status?admin_key=${ADMIN_KEY}`, {
     method: 'PATCH',
-    headers: adminHeaders,
+    headers: await buildAdminHeaders(),
     body: JSON.stringify({ status }),
   });
 
   if (!res.ok) {
     const json = await res.json().catch(() => ({}));
-    throw new Error(json.error || `Gagal mengubah status: ${res.status}`);
+    throw new Error(json.error || json.message || `Gagal mengubah status: ${res.status}`);
   }
 }
 
-// ---------------------------------------------------------------
-// Fetch semua menu dari database
-// ---------------------------------------------------------------
 export async function fetchAdminMenu(): Promise<BackendMenu[]> {
   const res = await fetch(`${BACKEND_URL}/api/admin/menu?admin_key=${ADMIN_KEY}`, {
-    headers: adminHeaders,
+    headers: await buildAdminHeaders(),
     cache: 'no-store',
   });
 
@@ -144,15 +214,10 @@ export async function fetchAdminMenu(): Promise<BackendMenu[]> {
   return json.data as BackendMenu[];
 }
 
-// ---------------------------------------------------------------
-// Tambah menu baru — POST /api/admin/menu
-// `image` (opsional) berisi URL gambar dari Cloud Storage.
-// Mengembalikan id menu yang dibuat backend.
-// ---------------------------------------------------------------
 export async function createAdminMenu(payload: MenuPayload): Promise<{ id: string }> {
   const res = await fetch(`${BACKEND_URL}/api/admin/menu?admin_key=${ADMIN_KEY}`, {
     method: 'POST',
-    headers: adminHeaders,
+    headers: await buildAdminHeaders(),
     body: JSON.stringify(payload),
   });
 
@@ -161,37 +226,28 @@ export async function createAdminMenu(payload: MenuPayload): Promise<{ id: strin
   return { id: String(json.data?.id ?? '') };
 }
 
-// ---------------------------------------------------------------
-// Edit menu — PATCH /api/admin/menu/:id
-// ---------------------------------------------------------------
 export async function updateAdminMenu(id: string, payload: MenuUpdatePayload): Promise<void> {
   const res = await fetch(`${BACKEND_URL}/api/admin/menu/${id}?admin_key=${ADMIN_KEY}`, {
     method: 'PATCH',
-    headers: adminHeaders,
+    headers: await buildAdminHeaders(),
     body: JSON.stringify(payload),
   });
 
   if (!res.ok) throw new Error(await readError(res, 'Gagal memperbarui menu'));
 }
 
-// ---------------------------------------------------------------
-// Hapus menu — DELETE /api/admin/menu/:id
-// ---------------------------------------------------------------
 export async function deleteAdminMenu(id: string): Promise<void> {
   const res = await fetch(`${BACKEND_URL}/api/admin/menu/${id}?admin_key=${ADMIN_KEY}`, {
     method: 'DELETE',
-    headers: { 'X-Admin-Key': ADMIN_KEY },
+    headers: await buildAdminHeaders(false),
   });
 
   if (!res.ok) throw new Error(await readError(res, 'Gagal menghapus menu'));
 }
 
-// ---------------------------------------------------------------
-// Fetch statistik dashboard
-// ---------------------------------------------------------------
 export async function fetchAdminStats(): Promise<AdminStats> {
   const res = await fetch(`${BACKEND_URL}/api/admin/stats?admin_key=${ADMIN_KEY}`, {
-    headers: adminHeaders,
+    headers: await buildAdminHeaders(),
     cache: 'no-store',
   });
 
@@ -199,15 +255,78 @@ export async function fetchAdminStats(): Promise<AdminStats> {
   return res.json() as Promise<AdminStats>;
 }
 
-// ---------------------------------------------------------------
-// Fetch data grafik penjualan — GET /api/admin/sales-chart
-// ---------------------------------------------------------------
 export async function fetchSalesChart(days: number): Promise<SalesChartData> {
   const res = await fetch(
     `${BACKEND_URL}/api/admin/sales-chart?days=${days}&admin_key=${ADMIN_KEY}`,
-    { headers: { 'X-Admin-Key': ADMIN_KEY }, cache: 'no-store' }
+    { headers: await buildAdminHeaders(false), cache: 'no-store' }
   );
 
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json() as Promise<SalesChartData>;
+}
+
+// ---------------------------------------------------------------
+// AI Analytics & Verifikasi Manual Manajer
+// ---------------------------------------------------------------
+export async function fetchAiLogs(
+  status?: AiVerificationStatus | 'all',
+  featureType?: AiFeatureType | 'all'
+): Promise<AiLogItem[]> {
+  const params = new URLSearchParams();
+  if (status && status !== 'all') params.set('status', status);
+  if (featureType && featureType !== 'all') params.set('feature_type', featureType);
+
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  const res = await fetch(`${BACKEND_URL}/api/ai/logs${qs}`, {
+    headers: await buildAdminHeaders(),
+    cache: 'no-store',
+  });
+
+  if (!res.ok) throw new Error(await readError(res, 'Gagal mengambil log hasil AI'));
+  const json = await res.json();
+  return (json.data ?? []) as AiLogItem[];
+}
+
+export async function fetchAiStats(): Promise<AiVerificationStats> {
+  const res = await fetch(`${BACKEND_URL}/api/ai/stats`, {
+    headers: await buildAdminHeaders(),
+    cache: 'no-store',
+  });
+
+  if (!res.ok) throw new Error(await readError(res, 'Gagal mengambil statistik AI'));
+  const json = await res.json();
+  return json.data as AiVerificationStats;
+}
+
+export async function verifyAiLog(
+  logId: number,
+  verificationStatus: 'verified' | 'rejected',
+  verificationNotes?: string
+): Promise<void> {
+  const res = await fetch(`${BACKEND_URL}/api/ai/logs/${logId}/verify`, {
+    method: 'PATCH',
+    headers: await buildAdminHeaders(),
+    body: JSON.stringify({
+      verification_status: verificationStatus,
+      verification_notes: verificationNotes?.trim() || undefined,
+    }),
+  });
+
+  if (!res.ok) throw new Error(await readError(res, 'Gagal memverifikasi hasil AI'));
+}
+
+export async function generateAiQueueTest(payload: {
+  outlet: string;
+  day: string;
+  timeSlot: string;
+  distanceKm?: number;
+}): Promise<Record<string, unknown>> {
+  const res = await fetch(`${BACKEND_URL}/api/ai/queue-estimator`, {
+    method: 'POST',
+    headers: await buildAdminHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) throw new Error(await readError(res, 'Gagal menjalankan prediksi AI'));
+  return res.json();
 }

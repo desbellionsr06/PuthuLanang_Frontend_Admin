@@ -12,12 +12,14 @@ import { useDashboardData } from './useDashboardData';
 import { DashboardHeader } from './components/DashboardHeader';
 import { ConnectionStatusSection } from './components/ConnectionStatusSection';
 import { MetricsSection } from './components/MetricsSection';
+import { AiAnalyticsSummary } from './components/AiAnalyticsSummary';
 import { SalesChart } from './components/SalesChart';
 import { OrdersSection } from './components/OrdersSection';
 
 export default function DashboardPage() {
   const {
     stats,
+    aiStats,
     filteredOrders,
     statusFilter,
     setStatusFilter,
@@ -44,6 +46,9 @@ export default function DashboardPage() {
 
       {/* Grid 4 Kartu Metrik */}
       <MetricsSection stats={stats} isLoading={isLoading} />
+
+      {/* Ringkasan Analitik & Audit Hasil AI (Peran Pemantau/Manajer) */}
+      <AiAnalyticsSummary aiStats={aiStats} isLoading={isLoading} />
 
       {/* Grafik Penjualan Real-time */}
       <SalesChart />

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Flame, LayoutDashboard, Utensils, Bot, LogOut, UserCheck, Menu, X } from 'lucide-react';
+import { Flame, LayoutDashboard, Utensils, Bot, Sparkles, LogOut, UserCheck, Menu, X } from 'lucide-react';
 
 export interface AdminSidebarNavbarProps {
   onOpenAiModal: () => void;
@@ -12,8 +12,9 @@ export interface AdminSidebarNavbarProps {
 }
 
 const NAV_ITEMS = [
-  { href: '/admin/dashboard', label: 'Dashboard Utama', Icon: LayoutDashboard },
-  { href: '/admin/kelola', label: 'Kelola Menu (CRUD)', Icon: Utensils },
+  { href: '/admin/dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+  { href: '/admin/ai-verification', label: 'Verifikasi AI', Icon: Sparkles },
+  { href: '/admin/kelola', label: 'Kelola Menu', Icon: Utensils },
 ] as const;
 
 export const AdminSidebarNavbar: React.FC<AdminSidebarNavbarProps> = ({
@@ -37,26 +38,26 @@ export const AdminSidebarNavbar: React.FC<AdminSidebarNavbarProps> = ({
         {/* Brand Logo & Title */}
         <Link
           href="/admin/dashboard"
-          className="flex items-center gap-3 cursor-pointer group select-none"
+          className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group select-none min-w-0"
         >
-          <div className="w-10 h-10 rounded-2xl bg-[#2E7D32] border border-[#2E7D32]/50 flex items-center justify-center text-[#D49B42] shadow-md group-hover:scale-105 transition-transform">
-            <Flame className="w-6 h-6 text-[#D49B42]" />
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#2E7D32] border border-[#2E7D32]/50 flex items-center justify-center text-[#D49B42] shadow-md group-hover:scale-105 transition-transform shrink-0">
+            <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-[#D49B42]" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base tracking-wide text-[#F8F4EC] group-hover:text-[#D49B42] transition-colors">
+              <span className="font-extrabold text-sm sm:text-base tracking-wide text-[#F8F4EC] group-hover:text-[#D49B42] transition-colors truncate">
                 Puthu Lanang Admin
               </span>
-              <span className="px-2 py-0.5 bg-[#D49B42]/20 border border-[#D49B42]/40 text-[#D49B42] text-[10px] font-extrabold rounded-md uppercase">
-                ADMIN SYSTEM
+              <span className="hidden sm:inline-block px-2 py-0.5 bg-[#D49B42]/20 border border-[#D49B42]/40 text-[#D49B42] text-[10px] font-extrabold rounded-md uppercase shrink-0">
+                PEMANTAU
               </span>
             </div>
-            <p className="text-[10px] text-[#C5B8A8]">Management System • Celaket Malang</p>
+            <p className="text-[10px] text-[#C5B8A8] truncate">Management System • Celaket Malang</p>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-2 bg-[#1E1510] p-1.5 rounded-2xl border border-[#3E2C22]">
+        <nav className="hidden lg:flex items-center gap-1.5 bg-[#1E1510] p-1.5 rounded-2xl border border-[#3E2C22] shrink-0">
           {NAV_ITEMS.map(({ href, label, Icon }) => (
             <Link
               key={href}
@@ -82,23 +83,23 @@ export const AdminSidebarNavbar: React.FC<AdminSidebarNavbarProps> = ({
         </nav>
 
         {/* Right Desktop Actions & Mobile Menu Toggle */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 bg-[#1E1510] border border-[#3E2C22] px-3 py-1.5 rounded-xl">
-            <UserCheck className="w-4 h-4 text-[#2E7D32]" />
-            <span className="text-xs font-bold text-[#F8F4EC] max-w-[140px] truncate">{adminUsername}</span>
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2 bg-[#1E1510] border border-[#3E2C22] px-2.5 sm:px-3 py-1.5 rounded-xl">
+            <UserCheck className="w-4 h-4 text-[#2E7D32] shrink-0" />
+            <span className="hidden sm:inline text-xs font-bold text-[#F8F4EC] max-w-[130px] truncate">{adminUsername}</span>
             <button
               onClick={onLogout}
-              className="text-[#C5B8A8] hover:text-red-400 p-1 ml-1 transition-colors"
+              className="text-[#C5B8A8] hover:text-red-400 p-1 transition-colors"
               title="Keluar Admin"
             >
               <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {/* Mobile Menu Toggle Button */}
+          {/* Mobile/Tablet Menu Toggle Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 bg-[#1E1510] border border-[#3E2C22] text-[#F8F4EC] rounded-xl hover:border-[#D49B42] transition-all"
+            className="lg:hidden p-2 bg-[#1E1510] border border-[#3E2C22] text-[#F8F4EC] rounded-xl hover:border-[#D49B42] transition-all"
             aria-label="Toggle Mobile Menu"
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -107,9 +108,9 @@ export const AdminSidebarNavbar: React.FC<AdminSidebarNavbarProps> = ({
 
       </div>
 
-      {/* Responsive Mobile Drawer / Navigation Dropdown */}
+      {/* Responsive Mobile/Tablet Drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-[#1E1510] border-t border-[#3E2C22] px-4 py-4 space-y-3 animate-fadeIn">
+        <div className="lg:hidden bg-[#1E1510] border-t border-[#3E2C22] px-4 py-4 space-y-3 animate-fadeIn">
           <div className="flex flex-col gap-2">
             {NAV_ITEMS.map(({ href, label, Icon }) => (
               <Link

@@ -1,6 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useSyncExternalStore } from 'react';
+
+const emptySubscribe = () => () => {};
+const getServerDateSnapshot = () => '';
 
 const formatTanggalHariIni = () =>
   new Date().toLocaleDateString('id-ID', {
@@ -11,12 +14,12 @@ const formatTanggalHariIni = () =>
   });
 
 export const DashboardHeader: React.FC = () => {
-  // Diisi setelah mount agar tidak terjadi hydration mismatch (server vs client)
-  const [tanggal, setTanggal] = useState('');
-
-  useEffect(() => {
-    setTanggal(formatTanggalHariIni());
-  }, []);
+  // Diisi hanya di client via useSyncExternalStore agar bebas hydration mismatch
+  const tanggal = useSyncExternalStore(
+    emptySubscribe,
+    formatTanggalHariIni,
+    getServerDateSnapshot
+  );
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#2A1D16] border border-[#3E2C22] p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl">
@@ -26,7 +29,7 @@ export const DashboardHeader: React.FC = () => {
             Dashboard Admin - Puthu Lanang
           </h1>
           <span className="px-2.5 py-0.5 bg-[#2E7D32] text-white text-[10px] font-extrabold rounded-full uppercase tracking-wider shadow-xs">
-            ADMIN
+            PEMANTAU / MANAJER
           </span>
         </div>
         <p className="text-xs text-[#C5B8A8]">

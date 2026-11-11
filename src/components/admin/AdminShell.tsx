@@ -8,7 +8,7 @@
 import React, { useCallback, useState } from 'react';
 import { signOut } from 'next-auth/react';
 
-
+import { clearCachedManagerJwt } from '@/lib/adminApi';
 import { AdminSidebarNavbar } from '@/components/global/AdminSidebarNavbar';
 import { AdminAiPredictorModal } from '@/components/admin/AdminAiPredictorModal';
 import { AiFeatureBanner } from '@/components/admin/AiFeatureBanner';
@@ -22,8 +22,9 @@ interface AdminShellProps {
 export const AdminShell: React.FC<AdminShellProps> = ({ adminName, children }) => {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
-  // Logout → hapus sesi NextAuth & kembali ke /login
+  // Logout → bersihkan JWT cache, hapus sesi NextAuth & kembali ke /login
   const handleLogout = useCallback(() => {
+    clearCachedManagerJwt();
     signOut({ callbackUrl: '/login' });
   }, []);
 
@@ -43,8 +44,8 @@ export const AdminShell: React.FC<AdminShellProps> = ({ adminName, children }) =
         {/* Banner Rencana Fitur AI */}
         <AiFeatureBanner onOpenAiModal={() => setIsAiModalOpen(true)} />
 
-        {/* Konten halaman (dashboard / kelola) */}
-        <div className="w-full overflow-hidden">{children}</div>
+        {/* Konten halaman (dashboard / kelola / verifikasi AI) */}
+        <div className="w-full min-w-0">{children}</div>
 
       </main>
 
