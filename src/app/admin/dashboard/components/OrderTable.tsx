@@ -51,8 +51,8 @@ export const OrderTable: React.FC<OrderTableProps> = ({
               </td>
             </tr>
           ) : (
-            orders.map((o) => (
-              <tr key={o.id} className="hover:bg-[#1E1510]/80 transition-colors">
+            orders.map((o, index) => (
+              <tr key={o.id ? `${o.id}-${index}` : `order-${index}`} className="hover:bg-[#1E1510]/80 transition-colors">
                 <td className="p-3.5 sm:p-4 font-mono font-extrabold text-[#D49B42] whitespace-nowrap">{o.id}</td>
                 <td className="p-3.5 sm:p-4 font-bold">{o.customerName}</td>
                 <td className="p-3.5 sm:p-4 text-[#C5B8A8] max-w-xs truncate">{o.itemsSummary}</td>

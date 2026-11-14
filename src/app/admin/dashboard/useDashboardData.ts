@@ -20,15 +20,17 @@ export const POLL_INTERVAL_MS = 8000;
 
 // Konversi format BackendOrder → AdminOrderModel (untuk tabel)
 function mapBackendToAdminOrder(o: BackendOrder): AdminOrderModel {
+  const resolvedId = o.order_id || (o as any).id || ((o as any).raw_id ? `ORD-${(o as any).raw_id}` : '');
+  const resolvedName = o.customer_name || (o as any).name || 'Pelanggan';
   return {
-    id: o.order_id,
-    customerName: o.customer_name || 'Pelanggan',
+    id: resolvedId,
+    customerName: resolvedName,
     itemsSummary: o.summary_items || '-',
     pickupMethod: (o.pickup_time && o.pickup_time !== '-') ? 'SCHEDULED_PICKUP' : 'TAKEAWAY_NOW',
     pickupTime: o.pickup_time || '-',
     totalPrice: Number(o.total) || 0,
     status: (o.status as OrderStatus) || 'Baru',
-    date: o.pickup_date || new Date(o.created_at).toLocaleDateString('id-ID'),
+    date: o.pickup_date || (o.created_at ? new Date(o.created_at).toLocaleDateString('id-ID') : '-'),
   };
 }
 
