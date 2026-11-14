@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Sparkles, CheckCircle2, Clock, XCircle, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Sparkles, CheckCircle2, Clock, XCircle, ArrowRight, ShieldCheck, Play } from 'lucide-react';
 import { AiVerificationStats } from '@/lib/adminApi';
 
 interface AiAnalyticsSummaryProps {
@@ -39,13 +39,22 @@ export const AiAnalyticsSummary: React.FC<AiAnalyticsSummaryProps> = ({ aiStats,
           </p>
         </div>
 
-        <Link
-          href="/admin/ai-verification"
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#2E7D32] hover:bg-[#388E3C] text-white text-xs font-extrabold shadow-md transition-all shrink-0"
-        >
-          <span>Buka Verifikasi AI</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <Link
+            href="/admin/ai-verification"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#D49B42] hover:bg-[#F3B251] text-[#17110C] text-xs font-extrabold shadow-md transition-all shrink-0 cursor-pointer"
+          >
+            <Play className="w-3.5 h-3.5" />
+            <span>Generate / Uji AI</span>
+          </Link>
+          <Link
+            href="/admin/ai-verification"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#2E7D32] hover:bg-[#388E3C] text-white text-xs font-extrabold shadow-md transition-all shrink-0 cursor-pointer"
+          >
+            <span>Verifikasi Manual</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

@@ -27,7 +27,8 @@ export async function GET() {
       },
       body: JSON.stringify({
         email: session.user.email,
-        nama: session.user.name || 'Manajer Puthu Lanang',
+        nama: session.user.name || 'Admin Puthu Lanang',
+        role: session.user.email.toLowerCase().includes('kasir') ? 'cashier' : 'owner',
       }),
       cache: 'no-store',
     });
