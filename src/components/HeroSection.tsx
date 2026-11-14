@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { useStore } from '@/store/useStore';
 import { ArrowRight, Flame, Sparkles, Award, Clock, ShieldCheck } from 'lucide-react';
 
@@ -89,12 +90,16 @@ export const HeroSection: React.FC = () => {
                 <div className="w-2 h-7 bg-gradient-to-t from-white/30 to-transparent rounded-full animate-steam [animation-delay:1s]" />
               </div>
 
-              {/* Main Image */}
+              {/* Main Image (LCP Optimized) */}
               <div className="relative h-64 sm:h-72 rounded-2xl overflow-hidden border border-[#3F2D23]">
-                <img
+                <Image
                   src="/images/paket_tampah.png"
                   alt="Paket Tampah Puthu Lanang Malang"
-                  className="w-full h-full object-cover"
+                  fill
+                  priority
+                  preload
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#17110C] via-transparent to-black/20" />
                 <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">

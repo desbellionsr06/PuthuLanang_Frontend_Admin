@@ -8,8 +8,12 @@ import { auth } from '@/auth';
 import { AdminShell } from '@/components/admin/AdminShell';
 
 export const metadata: Metadata = {
-  title: 'Admin | Puthu Lanang Malang',
-  description: 'Admin Management System Puthu Lanang Malang — kelola pesanan dan menu.',
+  title: 'Admin Panel | Puthu Lanang Malang',
+  description: 'Admin Management System Puthu Lanang Malang — kelola pesanan, analitik, dan verifikasi AI.',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function AdminLayout({
