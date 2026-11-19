@@ -20,8 +20,8 @@ export const POLL_INTERVAL_MS = 8000;
 
 // Konversi format BackendOrder → AdminOrderModel (untuk tabel)
 function mapBackendToAdminOrder(o: BackendOrder): AdminOrderModel {
-  const resolvedId = o.order_id || (o as any).id || ((o as any).raw_id ? `ORD-${(o as any).raw_id}` : '');
-  const resolvedName = o.customer_name || (o as any).name || 'Pelanggan';
+  const resolvedId = o.order_id || (o.id ? `ORD-${o.id}` : '');
+  const resolvedName = o.customer_name || 'Pelanggan';
   return {
     id: resolvedId,
     customerName: resolvedName,
@@ -31,6 +31,8 @@ function mapBackendToAdminOrder(o: BackendOrder): AdminOrderModel {
     totalPrice: Number(o.total) || 0,
     status: (o.status as OrderStatus) || 'Baru',
     date: o.pickup_date || (o.created_at ? new Date(o.created_at).toLocaleDateString('id-ID') : '-'),
+    estimated_minutes: o.estimated_minutes ?? null,
+    estimated_ready_at: o.estimated_ready_at ?? null,
   };
 }
 
@@ -114,12 +116,25 @@ export function useDashboardData() {
   );
 
   // Ubah status pesanan → kirim PATCH ke backend (optimistic update)
-  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+  const handleStatusChange = async (
+    orderId: string,
+    newStatus: OrderStatus,
+    estimatedMinutes?: number
+  ) => {
     setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+      prev.map((o) =>
+        o.id === orderId
+          ? {
+              ...o,
+              status: newStatus,
+              estimated_minutes:
+                estimatedMinutes !== undefined ? estimatedMinutes : o.estimated_minutes,
+            }
+          : o
+      )
     );
     try {
-      await updateOrderStatus(orderId, newStatus);
+      await updateOrderStatus(orderId, newStatus, estimatedMinutes);
     } catch (err: unknown) {
       // Rollback jika gagal: re-fetch untuk sinkronisasi
       console.error('Gagal update status:', err);

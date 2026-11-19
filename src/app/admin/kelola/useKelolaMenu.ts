@@ -88,15 +88,43 @@ export function useKelolaMenu() {
   const handleSaveMenu = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validasi client-side sebelum kirim ke API
+    // Validasi client-side sebelum kirim ke API (Strict Validation)
     const parsedPrice = Number(price);
-    if (!name.trim()) {
-      addToast('Nama menu wajib diisi.', 'warning');
+
+    // 1. Nama menu: hanya huruf dan spasi
+    if (!name.trim() || !/^[A-Za-z\s]+$/.test(name.trim())) {
+      addToast('Nama menu hanya boleh berisi huruf alfabet dan spasi (tanpa angka/simbol).', 'warning');
       return;
     }
-    if (!price || isNaN(parsedPrice) || parsedPrice <= 0) {
-      addToast('Harga menu wajib diisi dan harus berupa angka positif.', 'warning');
+
+    // 2. Harga menu: angka bulat positif > 0
+    if (!price || isNaN(parsedPrice) || !Number.isInteger(parsedPrice) || parsedPrice <= 0) {
+      addToast('Harga menu wajib diisi dengan bilangan bulat positif (> 0).', 'warning');
       return;
+    }
+
+    // 3. Estimasi waktu kukus: rentang 1 - 180 menit
+    if (preparationTimeMins !== '' && (Number(preparationTimeMins) < 1 || Number(preparationTimeMins) > 180)) {
+      addToast('Estimasi waktu kukus harus berupa angka antara 1 hingga 180 menit.', 'warning');
+      return;
+    }
+
+    // 4. Takaran porsi: huruf, angka, spasi, dan /
+    if (portionDetails.trim() && !/^[A-Za-z0-9\s/]+$/.test(portionDetails.trim())) {
+      addToast('Takaran porsi hanya boleh berisi huruf, angka, spasi, dan garis miring / (contoh: 5 pcs / porsi).', 'warning');
+      return;
+    }
+
+    // 5. Deskripsi: minimal 10 karakter dan tidak boleh hanya angka
+    if (description.trim()) {
+      if (/^\d+$/.test(description.trim())) {
+        addToast('Deskripsi menu tidak boleh hanya terdiri dari angka.', 'warning');
+        return;
+      }
+      if (description.trim().length < 10) {
+        addToast('Deskripsi menu minimal 10 karakter jika diisi.', 'warning');
+        return;
+      }
     }
 
     setIsSaving(true);
@@ -122,6 +150,8 @@ export function useKelolaMenu() {
           price:       parsedPrice,
           category,
           description: trimmedDescription || undefined,
+          estimasi_waktu_kukus: preparationTimeMins !== '' ? Number(preparationTimeMins) : 10,
+          takaran_porsi: portionDetails.trim() || undefined,
         });
         addToast(`✅ Menu "${name}" berhasil diperbarui di database!`, 'success');
 
@@ -138,6 +168,8 @@ export function useKelolaMenu() {
           description: trimmedDescription || undefined,
           stock:       editingStock,
           image:       imageUrl,
+          estimasi_waktu_kukus: preparationTimeMins !== '' ? Number(preparationTimeMins) : 10,
+          takaran_porsi: portionDetails.trim() || undefined,
         });
 
         try {
@@ -159,6 +191,8 @@ export function useKelolaMenu() {
           category,
           description: trimmedDescription || 'Sajian jajanan pasar tradisional otentik 1935.',
           stock:       100,                  // default stok awal
+          estimasi_waktu_kukus: preparationTimeMins !== '' ? Number(preparationTimeMins) : 10,
+          takaran_porsi: portionDetails.trim() || undefined,
           ...(imageUrl ? { image: imageUrl } : {}),
         });
         addToast(`✅ Menu baru "${name}" berhasil ditambahkan ke database!`, 'success');

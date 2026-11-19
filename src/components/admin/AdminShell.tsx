@@ -11,7 +11,6 @@ import { signOut } from 'next-auth/react';
 import { clearCachedManagerJwt } from '@/lib/adminApi';
 import { AdminSidebarNavbar } from '@/components/global/AdminSidebarNavbar';
 import { AdminAiPredictorModal } from '@/components/admin/AdminAiPredictorModal';
-import { AiFeatureBanner } from '@/components/admin/AiFeatureBanner';
 import { ToastContainer } from '@/components/ToastContainer';
 
 interface AdminShellProps {
@@ -40,9 +39,6 @@ export const AdminShell: React.FC<AdminShellProps> = ({ adminName, children }) =
 
       {/* Main Content Body */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full space-y-6 sm:space-y-8">
-
-        {/* Banner Rencana Fitur AI */}
-        <AiFeatureBanner onOpenAiModal={() => setIsAiModalOpen(true)} />
 
         {/* Konten halaman (dashboard / kelola / verifikasi AI) */}
         <div className="w-full min-w-0">{children}</div>

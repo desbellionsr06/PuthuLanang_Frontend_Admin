@@ -15,6 +15,8 @@ export interface AdminOrderModel {
   totalPrice: number;
   status: OrderStatus;
   date: string;
+  estimated_minutes?: number | null;
+  estimated_ready_at?: string | null;
 }
 
 export interface MenuItemModel {

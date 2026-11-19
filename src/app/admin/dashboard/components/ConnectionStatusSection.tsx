@@ -24,8 +24,14 @@ export const ConnectionStatusSection: React.FC<ConnectionStatusSectionProps> = (
         {error ? (
           <>
             <WifiOff className="w-4 h-4 text-red-400 shrink-0" />
-            <span className="text-red-400 font-semibold">Tidak dapat terhubung ke backend:</span>
-            <span className="text-red-300">{error}</span>
+            <span className="text-red-400 font-semibold">
+              {error.includes('Akses ditolak') || error.includes('403') ? 'Peringatan Akses:' : 'Tidak dapat terhubung ke backend:'}
+            </span>
+            <span className="text-red-300">
+              {error.includes('403') || error.includes('Akses ditolak')
+                ? 'Akses ditolak: Dashboard hanya dapat diakses oleh akun admin terdaftar (maks. 3 akun).'
+                : error}
+            </span>
           </>
         ) : (
           <>

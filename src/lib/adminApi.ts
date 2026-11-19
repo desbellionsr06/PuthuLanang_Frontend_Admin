@@ -79,6 +79,8 @@ export interface BackendOrder {
   pickup_date: string;
   notes: string;
   summary_items: string;
+  estimated_minutes?: number | null;
+  estimated_ready_at?: string | null;
   created_at: string;
 }
 
@@ -128,6 +130,8 @@ export interface MenuPayload {
   description?: string;
   stock?: number;
   image?: string;
+  estimasi_waktu_kukus?: number;
+  takaran_porsi?: string;
 }
 
 export interface MenuUpdatePayload {
@@ -135,6 +139,8 @@ export interface MenuUpdatePayload {
   price?: number;
   category?: string;
   description?: string;
+  estimasi_waktu_kukus?: number;
+  takaran_porsi?: string;
 }
 
 // ---------------------------------------------------------------
@@ -167,7 +173,13 @@ export interface AiVerificationStats {
 }
 
 async function readError(res: Response, fallback: string): Promise<string> {
+  if (res.status === 403) {
+    return 'Akses ditolak: Dashboard hanya dapat diakses oleh akun admin terdaftar (maks. 3 akun).';
+  }
   const json = await res.json().catch(() => ({}));
+  if (json.error?.includes?.('403') || json.message?.includes?.('403') || json.error?.includes?.('Akses ditolak')) {
+    return 'Akses ditolak: Dashboard hanya dapat diakses oleh akun admin terdaftar (maks. 3 akun).';
+  }
   return json.error || json.message || `${fallback}: ${res.status}`;
 }
 
@@ -183,22 +195,39 @@ export async function fetchAdminOrders(status?: string): Promise<BackendOrder[]>
     cache: 'no-store',
   });
 
-  if (!res.ok) throw new Error(`Gagal mengambil pesanan: ${res.status}`);
+  if (!res.ok) {
+    if (res.status === 403) {
+      throw new Error('Akses ditolak: Dashboard hanya dapat diakses oleh akun admin terdaftar (maks. 3 akun).');
+    }
+    throw new Error(`Gagal mengambil pesanan: ${res.status}`);
+  }
   const json = await res.json();
   return json.data as BackendOrder[];
 }
 
-export async function updateOrderStatus(orderId: string, status: string): Promise<void> {
+export async function updateOrderStatus(
+  orderId: string,
+  status: string,
+  estimatedMinutes?: number
+): Promise<void> {
   const numericId = orderId.replace(/^ORD-/i, '');
+
+  const bodyPayload: { status: string; estimated_minutes?: number } = { status };
+  if (estimatedMinutes !== undefined && Number.isInteger(estimatedMinutes) && estimatedMinutes > 0) {
+    bodyPayload.estimated_minutes = estimatedMinutes;
+  }
 
   const res = await fetch(`${BACKEND_URL}/api/admin/orders/${numericId}/status?admin_key=${ADMIN_KEY}`, {
     method: 'PATCH',
     headers: await buildAdminHeaders(),
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(bodyPayload),
   });
 
   if (!res.ok) {
     const json = await res.json().catch(() => ({}));
+    if (res.status === 403) {
+      throw new Error('Akses ditolak: Dashboard hanya dapat diakses oleh akun admin terdaftar (maks. 3 akun).');
+    }
     throw new Error(json.error || json.message || `Gagal mengubah status: ${res.status}`);
   }
 }

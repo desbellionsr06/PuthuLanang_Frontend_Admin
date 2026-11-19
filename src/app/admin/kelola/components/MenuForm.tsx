@@ -2,20 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { MenuCategory } from '@/types';
-import { Plus, Edit2, ImageIcon } from 'lucide-react';
+import { Plus, Edit2, ImageIcon, AlertCircle } from 'lucide-react';
 import { MAX_IMAGE_SIZE_MB } from '@/lib/uploadApi';
 
 // Resolusi otomatis foto berdasarkan nama menu (untuk preview di form)
 function resolvePreviewImage(name: string, category: string): string {
   const n = name.toLowerCase();
-  if (n.includes('puthu'))                      return '/images/puthu_bambu.png';
-  if (n.includes('klepon'))                     return '/images/klepon_pandan.png';
-  if (n.includes('cenil'))                      return '/images/cenil_pelangi.png';
-  if (n.includes('lupis'))                      return '/images/lupis_ketan.png';
+  if (n.includes('puthu'))                         return '/images/puthu_bambu.png';
+  if (n.includes('klepon'))                        return '/images/klepon_pandan.png';
+  if (n.includes('cenil'))                         return '/images/cenil_pelangi.png';
+  if (n.includes('lupis'))                         return '/images/lupis_ketan.png';
   if (n.includes('paket') || n.includes('campur')) return '/images/paket_tampah.png';
   if (n.includes('besek') || n.includes('hampers')) return '/images/paket_tampah.png';
-  if (category === 'paling_laris')              return '/images/klepon_pandan.png';
-  if (category === 'besek')                     return '/images/paket_tampah.png';
+  if (category === 'paling_laris')                 return '/images/klepon_pandan.png';
+  if (category === 'besek')                        return '/images/paket_tampah.png';
   return '/images/paket_tampah.png';
 }
 
@@ -35,13 +35,9 @@ interface MenuFormProps {
   setDescription: (val: string) => void;
   onSaveMenu: (e: React.FormEvent) => void;
   onResetForm: () => void;
-  // Props baru: gambar item yang sedang diedit
   previewImage?: string;
-  // File gambar yang dipilih user (dikelola parent). Di-upload ke Cloud Storage saat Simpan.
   selectedFile: File | null;
-  // Callback: meneruskan file asli yang dipilih user ke parent
   onFileSelected: (file: File | null) => void;
-  // Callback: pesan validasi file (mis. bukan gambar / terlalu besar)
   onFileError?: (message: string) => void;
 }
 
@@ -71,12 +67,18 @@ export const MenuForm: React.FC<MenuFormProps> = ({
   const displayImage = previewImage || autoPreview;
   const [imgError, setImgError] = useState(false);
 
-  // Preview lokal (blob URL) dari file yang dipilih — hanya untuk tampilan,
-  // file sebenarnya baru dikirim ke Cloud Storage saat tombol Simpan ditekan.
+  // Preview lokal (blob URL) dari file yang dipilih
   const [manualImage, setManualImage] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Parent mereset file (mis. setelah simpan / batal edit) → bersihkan preview
+  // State touched untuk validasi inline
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const markTouched = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
+  // Parent mereset file → bersihkan preview
   if (!selectedFile && manualImage) {
     setManualImage(null);
   }
@@ -88,15 +90,12 @@ export const MenuForm: React.FC<MenuFormProps> = ({
     };
   }, [manualImage]);
 
-  // Gambar final: foto yang dipilih > previewImage (edit) > auto-resolve
   const finalImage = manualImage || displayImage;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    // Reset nilai input file agar file yang sama bisa dipilih ulang
     e.target.value = '';
     if (!file) return;
-    // Validasi: hanya file gambar & maksimal ukuran
     if (!file.type.startsWith('image/')) {
       onFileError?.('Hanya file gambar yang diizinkan.');
       return;
@@ -105,7 +104,6 @@ export const MenuForm: React.FC<MenuFormProps> = ({
       onFileError?.(`Ukuran gambar maksimal ${MAX_IMAGE_SIZE_MB} MB.`);
       return;
     }
-    // Preview lokal + teruskan file asli ke parent (di-upload ke Cloud Storage saat Simpan)
     setManualImage(URL.createObjectURL(file));
     setImgError(false);
     onFileSelected(file);
@@ -113,8 +111,147 @@ export const MenuForm: React.FC<MenuFormProps> = ({
 
   const handleResetManualImage = () => {
     setImgError(false);
-    // Beritahu parent bahwa tidak ada lagi file yang dipilih
     onFileSelected(null);
+  };
+
+  // -------------------------------------------------------------
+  // VALIDASI KETAT SECARA REAL-TIME (Requirement 3)
+  // -------------------------------------------------------------
+
+  // 1. Validasi Nama Menu: Hanya boleh huruf dan spasi (/^[A-Za-z\s]*$/)
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawVal = e.target.value;
+    // Blokir angka dan simbol secara langsung saat mengetik
+    const sanitized = rawVal.replace(/[^A-Za-z\s]/g, '');
+    setName(sanitized);
+    setImgError(false);
+    markTouched('name');
+  };
+
+  const nameError = (() => {
+    if (touched.name || name.length > 0) {
+      if (!name.trim()) return 'Nama menu jajanan wajib diisi.';
+      if (!/^[A-Za-z\s]+$/.test(name.trim())) {
+        return 'Nama menu hanya boleh berisi huruf alfabet dan spasi (tanpa angka/simbol).';
+      }
+    }
+    return null;
+  })();
+
+  // 2. Validasi Harga: Hanya angka bulat positif (/^[0-9]*$/), cegah e, E, +, -, ., > 0
+  const handlePriceKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['e', 'E', '+', '-', '.', ','].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digitsOnly = e.target.value.replace(/\D/g, '');
+    setPrice(digitsOnly ? Number(digitsOnly) : '');
+    markTouched('price');
+  };
+
+  const priceError = (() => {
+    if (touched.price || price !== '') {
+      if (price === '' || price === null || price === undefined) {
+        return 'Harga menu wajib diisi.';
+      }
+      const num = Number(price);
+      if (isNaN(num) || !Number.isInteger(num) || num <= 0) {
+        return 'Harga harus berupa bilangan bulat positif lebih besar dari 0.';
+      }
+    }
+    return null;
+  })();
+
+  // 3. Validasi Estimasi Waktu Kukus: Angka bulat positif (/^[0-9]*$/), rentang 1–180 mnt
+  const handlePrepKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['e', 'E', '+', '-', '.', ','].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handlePrepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digitsOnly = e.target.value.replace(/\D/g, '');
+    setPreparationTimeMins(digitsOnly ? Number(digitsOnly) : '');
+    markTouched('prep');
+  };
+
+  const prepError = (() => {
+    if (preparationTimeMins !== '') {
+      const num = Number(preparationTimeMins);
+      if (isNaN(num) || !Number.isInteger(num) || num < 1 || num > 180) {
+        return 'Estimasi waktu kukus harus berupa angka bulat antara 1 hingga 180 menit.';
+      }
+    }
+    return null;
+  })();
+
+  // 4. Validasi Takaran Porsi: Huruf, angka, spasi, dan / (contoh: 5 pcs / porsi)
+  const handlePortionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    // Blokir karakter simbol aneh kecuali garis miring
+    const sanitized = raw.replace(/[^A-Za-z0-9\s/]/g, '');
+    setPortionDetails(sanitized);
+    markTouched('portion');
+  };
+
+  const portionError = (() => {
+    if (portionDetails.trim()) {
+      if (!/^[A-Za-z0-9\s/]+$/.test(portionDetails.trim())) {
+        return 'Takaran porsi hanya boleh berisi huruf, angka, spasi, dan garis miring / (contoh: 5 pcs / porsi).';
+      }
+    }
+    return null;
+  })();
+
+  // 5. Validasi Kategori: Wajib memilih opsi valid
+  const validCategories: MenuCategory[] = ['pusaka', 'paling_laris', 'paket_campur', 'besek'];
+  const categoryError = !validCategories.includes(category)
+    ? 'Kategori wajib dipilih dari opsi yang tersedia.'
+    : null;
+
+  // 6. Validasi Deskripsi: Teks deskriptif (tidak boleh hanya angka/simbol kosong, min 10 karakter jika diisi)
+  const handleDescChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
+    markTouched('desc');
+  };
+
+  const descError = (() => {
+    const trimmed = description.trim();
+    if (trimmed) {
+      if (/^\d+$/.test(trimmed)) {
+        return 'Deskripsi menu tidak boleh hanya terdiri dari angka.';
+      }
+      if (trimmed.length < 10) {
+        return 'Deskripsi menu minimal 10 karakter teks deskriptif.';
+      }
+    }
+    return null;
+  })();
+
+  // Status validasi form secara keseluruhan
+  const isFormValid =
+    !nameError &&
+    !priceError &&
+    !prepError &&
+    !portionError &&
+    !categoryError &&
+    !descError &&
+    name.trim().length > 0 &&
+    typeof price === 'number' &&
+    price > 0;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    markTouched('name');
+    markTouched('price');
+    markTouched('prep');
+    markTouched('portion');
+    markTouched('desc');
+
+    if (!isFormValid) return;
+    onSaveMenu(e);
   };
 
   return (
@@ -128,7 +265,7 @@ export const MenuForm: React.FC<MenuFormProps> = ({
           <button
             type="button"
             onClick={onResetForm}
-            className="text-[11px] font-bold text-[#D49B42] hover:underline transition-all"
+            className="text-[11px] font-bold text-[#D49B42] hover:underline transition-all cursor-pointer"
           >
             Batal Edit
           </button>
@@ -144,7 +281,7 @@ export const MenuForm: React.FC<MenuFormProps> = ({
         onChange={handleFileChange}
       />
 
-      {/* Preview Foto Menu — klik untuk upload gambar manual */}
+      {/* Preview Foto Menu */}
       {finalImage && !imgError ? (
         <div className="space-y-2">
           <div
@@ -159,7 +296,6 @@ export const MenuForm: React.FC<MenuFormProps> = ({
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#1E1510]/80 via-transparent to-transparent" />
-            {/* Overlay hover: tampilkan ikon ganti foto */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/40">
               <div className="flex flex-col items-center gap-1 text-white">
                 <ImageIcon className="w-6 h-6" />
@@ -175,12 +311,11 @@ export const MenuForm: React.FC<MenuFormProps> = ({
               )}
             </div>
           </div>
-          {/* Tombol aksi foto */}
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex-1 py-2 bg-[#1E1510] border border-[#3E2C22] hover:border-[#D49B42]/60 text-[#C5B8A8] hover:text-[#F8F4EC] text-[11px] font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-1.5"
+              className="flex-1 py-2 bg-[#1E1510] border border-[#3E2C22] hover:border-[#D49B42]/60 text-[#C5B8A8] hover:text-[#F8F4EC] text-[11px] font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <ImageIcon className="w-3.5 h-3.5" />
               Upload Foto ke Cloud
@@ -189,7 +324,7 @@ export const MenuForm: React.FC<MenuFormProps> = ({
               <button
                 type="button"
                 onClick={handleResetManualImage}
-                className="px-3 py-2 bg-[#1E1510] border border-[#3E2C22] hover:border-red-500/60 text-[#C5B8A8] hover:text-red-400 text-[11px] font-bold rounded-xl transition-all active:scale-95"
+                className="px-3 py-2 bg-[#1E1510] border border-[#3E2C22] hover:border-red-500/60 text-[#C5B8A8] hover:text-red-400 text-[11px] font-bold rounded-xl transition-all active:scale-95 cursor-pointer"
                 title="Kembali ke foto otomatis"
               >
                 Reset
@@ -210,7 +345,9 @@ export const MenuForm: React.FC<MenuFormProps> = ({
         </div>
       )}
 
-      <form onSubmit={onSaveMenu} className="space-y-4 text-xs">
+      {/* FORM INPUT DENGAN VALIDASI KETAT */}
+      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        {/* Field 1: Nama Menu Jajanan */}
         <div>
           <label className="block font-semibold text-[#C5B8A8] mb-1 uppercase tracking-wider">
             Nama Menu Jajanan *
@@ -220,29 +357,53 @@ export const MenuForm: React.FC<MenuFormProps> = ({
             required
             placeholder="Contoh: Puthu Bambu Spesial"
             value={name}
-            onChange={(e) => { setName(e.target.value); setImgError(false); }}
-            className="w-full bg-[#1E1510] border border-[#3E2C22] rounded-xl p-3 text-[#F8F4EC] placeholder-[#C5B8A8]/50 focus:outline-none focus:border-[#D49B42] focus:ring-1 focus:ring-[#D49B42] transition-all"
+            onChange={handleNameChange}
+            onBlur={() => markTouched('name')}
+            className={`w-full bg-[#1E1510] border ${
+              nameError ? 'border-red-500/80 focus:border-red-500' : 'border-[#3E2C22] focus:border-[#D49B42]'
+            } rounded-xl p-3 text-[#F8F4EC] placeholder-[#C5B8A8]/50 focus:outline-none focus:ring-1 focus:ring-[#D49B42] transition-all`}
           />
+          {nameError && (
+            <p className="text-[11px] text-red-400 font-semibold mt-1 flex items-center gap-1 animate-fadeIn">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{nameError}</span>
+            </p>
+          )}
+          <p className="text-[10px] text-[#C5B8A8]/70 mt-1">
+            Hanya huruf alfabet dan spasi (angka & simbol otomatis diblokir).
+          </p>
         </div>
 
+        {/* Field 2 & 3: Harga & Kategori */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block font-semibold text-[#C5B8A8] mb-1 uppercase tracking-wider">
               Harga (Rp) *
             </label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               required
-              placeholder="18000"
+              placeholder="Contoh: 18000"
               value={price}
-              onChange={(e) => setPrice(e.target.value ? Number(e.target.value) : '')}
-              className="w-full bg-[#1E1510] border border-[#3E2C22] rounded-xl p-3 text-[#F8F4EC] placeholder-[#C5B8A8]/50 focus:outline-none focus:border-[#D49B42] focus:ring-1 focus:ring-[#D49B42] transition-all"
+              onKeyDown={handlePriceKeyDown}
+              onChange={handlePriceChange}
+              onBlur={() => markTouched('price')}
+              className={`w-full bg-[#1E1510] border ${
+                priceError ? 'border-red-500/80 focus:border-red-500' : 'border-[#3E2C22] focus:border-[#D49B42]'
+              } rounded-xl p-3 text-[#F8F4EC] placeholder-[#C5B8A8]/50 focus:outline-none focus:ring-1 focus:ring-[#D49B42] transition-all`}
             />
+            {priceError && (
+              <p className="text-[11px] text-red-400 font-semibold mt-1 flex items-center gap-1 animate-fadeIn">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{priceError}</span>
+              </p>
+            )}
           </div>
 
           <div>
             <label className="block font-semibold text-[#C5B8A8] mb-1 uppercase tracking-wider">
-              Kategori
+              Kategori *
             </label>
             <select
               value={category}
@@ -254,21 +415,39 @@ export const MenuForm: React.FC<MenuFormProps> = ({
               <option value="paket_campur">Paket Campur</option>
               <option value="besek">Porsi Box Besek</option>
             </select>
+            {categoryError && (
+              <p className="text-[11px] text-red-400 font-semibold mt-1 flex items-center gap-1 animate-fadeIn">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{categoryError}</span>
+              </p>
+            )}
           </div>
         </div>
 
+        {/* Field 4 & 5: Estimasi Waktu Kukus & Takaran Porsi */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block font-semibold text-[#C5B8A8] mb-1 uppercase tracking-wider">
               Estimasi Waktu Kukus (Mnt)
             </label>
             <input
-              type="number"
-              placeholder="10"
+              type="text"
+              inputMode="numeric"
+              placeholder="Contoh: 10 (rentang 1–180)"
               value={preparationTimeMins}
-              onChange={(e) => setPreparationTimeMins(e.target.value ? Number(e.target.value) : '')}
-              className="w-full bg-[#1E1510] border border-[#3E2C22] rounded-xl p-3 text-[#F8F4EC] placeholder-[#C5B8A8]/50 focus:outline-none focus:border-[#D49B42] focus:ring-1 focus:ring-[#D49B42] transition-all"
+              onKeyDown={handlePrepKeyDown}
+              onChange={handlePrepChange}
+              onBlur={() => markTouched('prep')}
+              className={`w-full bg-[#1E1510] border ${
+                prepError ? 'border-red-500/80 focus:border-red-500' : 'border-[#3E2C22] focus:border-[#D49B42]'
+              } rounded-xl p-3 text-[#F8F4EC] placeholder-[#C5B8A8]/50 focus:outline-none focus:ring-1 focus:ring-[#D49B42] transition-all`}
             />
+            {prepError && (
+              <p className="text-[11px] text-red-400 font-semibold mt-1 flex items-center gap-1 animate-fadeIn">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{prepError}</span>
+              </p>
+            )}
           </div>
 
           <div>
@@ -279,31 +458,55 @@ export const MenuForm: React.FC<MenuFormProps> = ({
               type="text"
               placeholder="Contoh: 5 pcs / porsi"
               value={portionDetails}
-              onChange={(e) => setPortionDetails(e.target.value)}
-              className="w-full bg-[#1E1510] border border-[#3E2C22] rounded-xl p-3 text-[#F8F4EC] placeholder-[#C5B8A8]/50 focus:outline-none focus:border-[#D49B42] focus:ring-1 focus:ring-[#D49B42] transition-all"
+              onChange={handlePortionChange}
+              onBlur={() => markTouched('portion')}
+              className={`w-full bg-[#1E1510] border ${
+                portionError ? 'border-red-500/80 focus:border-red-500' : 'border-[#3E2C22] focus:border-[#D49B42]'
+              } rounded-xl p-3 text-[#F8F4EC] placeholder-[#C5B8A8]/50 focus:outline-none focus:ring-1 focus:ring-[#D49B42] transition-all`}
             />
+            {portionError && (
+              <p className="text-[11px] text-red-400 font-semibold mt-1 flex items-center gap-1 animate-fadeIn">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>{portionError}</span>
+              </p>
+            )}
+            <p className="text-[10px] text-[#C5B8A8]/70 mt-1">
+              Hanya huruf, angka, spasi, dan garis miring /.
+            </p>
           </div>
         </div>
 
+        {/* Field 6: Deskripsi Menu */}
         <div>
           <label className="block font-semibold text-[#C5B8A8] mb-1 uppercase tracking-wider">
             Deskripsi Menu
           </label>
           <textarea
             rows={3}
-            placeholder="Penjelasan rasa dan bahan baku otentik 1935..."
+            placeholder="Penjelasan rasa dan bahan baku otentik 1935 (min. 10 karakter jika diisi)..."
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full bg-[#1E1510] border border-[#3E2C22] rounded-xl p-3 text-[#F8F4EC] placeholder-[#C5B8A8]/50 focus:outline-none focus:border-[#D49B42] focus:ring-1 focus:ring-[#D49B42] transition-all resize-none"
+            onChange={handleDescChange}
+            onBlur={() => markTouched('desc')}
+            className={`w-full bg-[#1E1510] border ${
+              descError ? 'border-red-500/80 focus:border-red-500' : 'border-[#3E2C22] focus:border-[#D49B42]'
+            } rounded-xl p-3 text-[#F8F4EC] placeholder-[#C5B8A8]/50 focus:outline-none focus:ring-1 focus:ring-[#D49B42] transition-all resize-none`}
           />
+          {descError && (
+            <p className="text-[11px] text-red-400 font-semibold mt-1 flex items-center gap-1 animate-fadeIn">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{descError}</span>
+            </p>
+          )}
         </div>
 
+        {/* Tombol Submit (dinonaktifkan jika form belum valid) */}
         <button
           type="submit"
-          className="w-full py-3.5 bg-[#2E7D32] hover:bg-[#388E3C] active:scale-[0.98] text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+          disabled={!isFormValid}
+          className="w-full py-3.5 bg-[#2E7D32] hover:bg-[#388E3C] disabled:opacity-40 disabled:hover:bg-[#2E7D32] disabled:cursor-not-allowed active:scale-[0.98] text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
           {editingId ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-          <span>{editingId ? 'Simpan Perubahan Menu' : 'Tambah Menu'}</span>
+          <span>{editingId ? 'Simpan Perubahan Menu' : '+ Tambah Menu'}</span>
         </button>
       </form>
     </div>

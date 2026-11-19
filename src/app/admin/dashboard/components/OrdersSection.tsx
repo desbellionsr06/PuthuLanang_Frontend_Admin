@@ -10,7 +10,7 @@ interface OrdersSectionProps {
   statusFilter: string;
   setStatusFilter: (status: string) => void;
   isLoading: boolean;
-  onStatusChange: (orderId: string, newStatus: OrderStatus) => void;
+  onStatusChange: (orderId: string, newStatus: OrderStatus, estimatedMinutes?: number) => void;
 }
 
 // Section: filter status + tabel pesanan

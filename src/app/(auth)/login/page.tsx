@@ -7,7 +7,7 @@ import { Flame, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { auth, signIn } from '@/auth';
 
 const ERROR_MESSAGES: Record<string, string> = {
-  AccessDenied: 'Akun Google ini tidak terdaftar sebagai admin Puthu Lanang.',
+  AccessDenied: 'Akses ditolak: Dashboard hanya dapat diakses oleh akun admin terdaftar (maks. 3 akun).',
   Configuration: 'Konfigurasi autentikasi server belum lengkap. Hubungi developer.',
   Verification: 'Tautan verifikasi tidak valid atau sudah kedaluwarsa.',
 };
