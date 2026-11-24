@@ -49,7 +49,7 @@ export const AdminAiPredictorModal: React.FC<AdminAiPredictorModalProps> = ({ is
               <span>SPESIFIKASI RENCANA PENGEMBANGAN FITUR AI</span>
             </div>
             <p className="text-xs sm:text-sm text-[#F8F4EC] leading-relaxed font-medium">
-              "Fitur AI Rencana Pengembangan: <strong className="text-[#D49B42]">AI Smart Stock & Demand Predictor</strong> yang memprediksi lonjakan pembeli dan kebutuhan adonan kelapa/gula aren berdasarkan cuaca dan hari libur di Malang."
+              &ldquo;Fitur AI Rencana Pengembangan: <strong className="text-[#D49B42]">AI Smart Stock & Demand Predictor</strong> yang memprediksi lonjakan pembeli dan kebutuhan adonan kelapa/gula aren berdasarkan cuaca dan hari libur di Malang.&rdquo;
             </p>
           </div>
 

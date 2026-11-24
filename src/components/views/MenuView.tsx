@@ -7,7 +7,7 @@ import { MenuDetailModal } from '../MenuDetailModal';
 import { Star, Plus, Minus, ShoppingBag, Flame, ShieldCheck, Leaf, Truck, ArrowRight } from 'lucide-react';
 
 export const MenuView: React.FC = () => {
-  const { addToCart, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useStore();
+  const { addToCart, searchQuery, selectedCategory, setSelectedCategory } = useStore();
   const [selectedItemForModal, setSelectedItemForModal] = useState<MenuItem | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 

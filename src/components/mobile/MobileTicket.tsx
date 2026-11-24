@@ -3,14 +3,36 @@
 import React from 'react';
 import { MapPin, Clock, CheckCircle, RefreshCw, Download } from 'lucide-react';
 
+export interface MobileTicketItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface MobileTicketData {
+  ticketNumber: string;
+  outlet: string;
+  outletAddress: string;
+  date: string;
+  timeSlot: string;
+  notes: string;
+  customerName: string;
+  phone: string;
+  items: MobileTicketItem[];
+  totalPrice: number;
+  status: string;
+  createdAt: string;
+}
+
 interface MobileTicketProps {
-  ticketData?: any;
+  ticketData?: MobileTicketData;
   onNewOrder: () => void;
 }
 
 export const MobileTicket: React.FC<MobileTicketProps> = ({ ticketData, onNewOrder }) => {
   // Fallback default ticket if none provided yet
-  const activeTicket = ticketData || {
+  const activeTicket: MobileTicketData = ticketData || {
     ticketNumber: 'ANTREAN-04',
     outlet: 'Pusat Celaket',
     outletAddress: 'Jl. Jaksa Agung Suprapto No. 73, Malang',
@@ -131,7 +153,7 @@ export const MobileTicket: React.FC<MobileTicketProps> = ({ ticketData, onNewOrd
           {/* Items Purchased List */}
           <div className="space-y-1.5 pb-3 border-b border-[#3F2D23]">
             <p className="text-[10px] font-bold text-[#D49B42] uppercase">Rincian Menu Dipesan:</p>
-            {activeTicket.items.map((item: any, idx: number) => (
+            {activeTicket.items.map((item, idx) => (
               <div key={idx} className="flex justify-between text-xs text-[#F8F4EC]">
                 <span>
                   {item.quantity}x {item.name}

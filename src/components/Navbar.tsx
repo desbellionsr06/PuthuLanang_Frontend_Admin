@@ -15,8 +15,7 @@ export const Navbar: React.FC = () => {
     logout,
     setAuthModal,
     searchQuery,
-    setSearchQuery,
-    activeTicketId
+    setSearchQuery
   } = useStore();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

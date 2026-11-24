@@ -58,10 +58,26 @@ export function useKelolaMenu() {
     }
   }, []);
 
+  // Load awal + polling otomatis (setState hanya di callback async)
   useEffect(() => {
-    loadMenu();
+    let active = true;
+    fetchAdminMenu()
+      .then((data) => {
+        if (!active) return;
+        setMenuList(data.map(mapBackendToMenuItemModel));
+        setError(null);
+      })
+      .catch((err: unknown) => {
+        if (active) setError(err instanceof Error ? err.message : 'Gagal memuat menu.');
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
     const interval = setInterval(() => loadMenu(), POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, [loadMenu]);
 
   // ----------------------------------------------------------------

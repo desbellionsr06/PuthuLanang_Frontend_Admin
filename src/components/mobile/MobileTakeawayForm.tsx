@@ -3,11 +3,15 @@
 import React, { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { MapPin, Calendar, Clock, Edit3, ArrowLeft, CheckCircle2, ShoppingBag } from 'lucide-react';
+import type { MobileTicketData } from './MobileTicket';
 
 interface MobileTakeawayFormProps {
   onBack: () => void;
-  onSubmitSuccess: (ticketData: any) => void;
+  onSubmitSuccess: (ticketData: MobileTicketData) => void;
 }
+
+// Di luar komponen agar tidak dianggap fungsi impure saat render
+const generateTicketNumber = () => `ANTREAN-${Math.floor(10 + Math.random() * 90)}`;
 
 export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, onSubmitSuccess }) => {
   const { cart, getTotalPrice, clearCart } = useStore();
@@ -61,8 +65,8 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
       return;
     }
 
-    const ticketNumber = `ANTREAN-${Math.floor(10 + Math.random() * 90)}`;
-    const newTicket = {
+    const ticketNumber = generateTicketNumber();
+    const newTicket: MobileTicketData = {
       ticketNumber,
       outlet: selectedOutlet === 'celaket' ? 'Pusat Celaket' : 'Cabang Dinoyo',
       outletAddress: selectedOutlet === 'celaket' ? outlets[0].address : outlets[1].address,
@@ -71,7 +75,13 @@ export const MobileTakeawayForm: React.FC<MobileTakeawayFormProps> = ({ onBack, 
       notes,
       customerName,
       phone,
-      items: [...cart],
+      // Ratakan CartItem ({ item, quantity }) ke bentuk yang dibaca MobileTicket
+      items: cart.map((c) => ({
+        id: c.item.id,
+        name: c.item.name,
+        price: c.item.price,
+        quantity: c.quantity,
+      })),
       totalPrice,
       status: 'SEDANG DIKUKUS ♨️',
       createdAt: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),

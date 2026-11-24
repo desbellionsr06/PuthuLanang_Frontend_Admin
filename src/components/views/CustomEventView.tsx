@@ -13,13 +13,12 @@ export const CustomEventView: React.FC = () => {
   const [unitQuantity, setUnitQuantity] = useState(1);
   
   // Ratios (Default Standar Pusaka 1935: 40% Puthu, 20% Klepon, 20% Cenil, 20% Lupis)
-  const [puthuRatio, setPuthuRatio] = useState(40);
-  const [kleponRatio, setKleponRatio] = useState(20);
-  const [cenilRatio, setCenilRatio] = useState(20);
-  const [lupisRatio, setLupisRatio] = useState(20);
+  const [puthuRatio] = useState(40);
+  const [kleponRatio] = useState(20);
+  const [cenilRatio] = useState(20);
+  const [lupisRatio] = useState(20);
 
   const [notes, setNotes] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const packages = [
     {
@@ -144,7 +143,7 @@ export const CustomEventView: React.FC = () => {
               return (
                 <div
                   key={pkg.id}
-                  onClick={() => setPackageType(pkg.id as any)}
+                  onClick={() => setPackageType(pkg.id as typeof packageType)}
                   className={`bg-[#241913] border rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-xl flex flex-col justify-between ${
                     isSelected
                       ? 'border-[#2E7D32] ring-2 ring-[#2E7D32]/50 bg-gradient-to-b from-[#241913] to-[#2E7D32]/10'

@@ -4,35 +4,68 @@ import React, { useEffect, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { Flame, Clock, MapPin, RefreshCw, Printer, ArrowLeft, ShieldCheck } from 'lucide-react';
 
+interface TicketItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface TicketData {
+  orderId: string;
+  kitchenQueueNumber: number | string;
+  estimatedReadyTime: string;
+  paymentMethod: string;
+  qrCodeToken: string;
+  customerName: string;
+  customerPhone: string;
+  pickupTimeSlot: string;
+  items: TicketItem[];
+  totalPrice: number;
+}
+
+async function loadTicket(ticketId: string): Promise<TicketData | null> {
+  try {
+    const res = await fetch(`/api/orders/${ticketId}/ticket`);
+    const data = await res.json();
+    return res.ok && data.ticket ? (data.ticket as TicketData) : null;
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
+
 export const TicketView: React.FC = () => {
   const { activeTicketId, setActiveView } = useStore();
-  const [ticketData, setTicketData] = useState<any>(null);
+  const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
+  const qrDataUrl = ticketData
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+        ticketData.qrCodeToken
+      )}`
+    : '';
+
+  // Dipakai tombol "refresh"
   const fetchTicket = async () => {
     if (!activeTicketId) return;
     setLoading(true);
-    try {
-      const res = await fetch(`/api/orders/${activeTicketId}/ticket`);
-      const data = await res.json();
-      if (res.ok && data.ticket) {
-        setTicketData(data.ticket);
-        setQrDataUrl(
-          `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-            data.ticket.qrCodeToken
-          )}`
-        );
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    const ticket = await loadTicket(activeTicketId);
+    if (ticket) setTicketData(ticket);
+    setLoading(false);
   };
 
+  // Load awal + saat tiket aktif berubah (setState hanya di callback async)
   useEffect(() => {
-    fetchTicket();
+    if (!activeTicketId) return;
+    let active = true;
+    loadTicket(activeTicketId).then((ticket) => {
+      if (!active) return;
+      if (ticket) setTicketData(ticket);
+      setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
   }, [activeTicketId]);
 
   if (loading) {
@@ -168,7 +201,7 @@ export const TicketView: React.FC = () => {
               <div className="space-y-2 text-xs">
                 <p className="font-bold text-[#D49B42] uppercase tracking-wider">Rincian Item Jajanan</p>
                 <ul className="space-y-1">
-                  {ticketData.items.map((item: any, idx: number) => (
+                  {ticketData.items.map((item, idx) => (
                     <li key={idx} className="flex justify-between text-[#C5B8A8]">
                       <span>{item.quantity}x {item.name}</span>
                       <span className="font-bold text-[#F8F4EC]">

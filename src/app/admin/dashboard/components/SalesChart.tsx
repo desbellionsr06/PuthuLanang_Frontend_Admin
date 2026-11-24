@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { TrendingUp, BarChart2, RefreshCw, Calendar } from 'lucide-react';
 import { fetchSalesChart, SalesChartPoint as ChartPoint } from '@/lib/adminApi';
+import { BACKEND_URL } from '@/lib/config';
 
 // ─────────────────────────────────────────────
 // Custom Tooltip untuk Recharts
@@ -71,9 +72,25 @@ export const SalesChart: React.FC = () => {
     }
   }, [days]);
 
+  // Load awal + saat rentang hari berubah (setState hanya di callback async)
   useEffect(() => {
-    fetchChart();
-  }, [fetchChart]);
+    let active = true;
+    fetchSalesChart(days)
+      .then((json) => {
+        if (!active) return;
+        setData(json.data || []);
+        setError(null);
+      })
+      .catch((err: unknown) => {
+        if (active) setError(err instanceof Error ? err.message : 'Gagal memuat grafik');
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [days]);
 
   // Hitung summary
   const totalOrders = data.reduce((s, d) => s + d.total_orders, 0);
@@ -175,7 +192,7 @@ export const SalesChart: React.FC = () => {
           <p className="text-[#C5B8A8] text-xs text-center">
             Gagal memuat grafik: {error}
             <br />
-            <span className="text-[#D49B42]">Pastikan backend berjalan di localhost:5000</span>
+            <span className="text-[#D49B42]">Pastikan backend API ({BACKEND_URL}) berjalan normal.</span>
           </p>
         </div>
       ) : data.every(d => d.total_orders === 0) ? (

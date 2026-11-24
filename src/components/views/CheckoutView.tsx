@@ -36,7 +36,6 @@ export const CheckoutView: React.FC = () => {
   const [authTab, setAuthTab] = useState<'guest' | 'login' | 'register'>('guest');
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
 
   // Payment Method
   const [paymentMethod, setPaymentMethod] = useState<'QRIS' | 'GOPAY' | 'OVO' | 'CASH'>('QRIS');
@@ -118,7 +117,7 @@ export const CheckoutView: React.FC = () => {
       setActiveTicketId(data.order.id);
       clearCart();
       setActiveView('ticket');
-    } catch (err) {
+    } catch {
       addToast('Terjadi kesalahan koneksi server', 'warning');
     } finally {
       setIsProcessing(false);
@@ -276,7 +275,7 @@ export const CheckoutView: React.FC = () => {
                   <button
                     key={pm.id}
                     type="button"
-                    onClick={() => setPaymentMethod(pm.id as any)}
+                    onClick={() => setPaymentMethod(pm.id as typeof paymentMethod)}
                     className={`p-3.5 rounded-2xl text-xs font-bold flex flex-col items-center gap-2 border transition-all ${
                       paymentMethod === pm.id
                         ? 'bg-[#2E7D32]/20 border-[#2E7D32] text-[#F8F4EC] ring-1 ring-[#2E7D32]'

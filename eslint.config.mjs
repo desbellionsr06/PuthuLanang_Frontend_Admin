@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Skrip bantu lokal, bukan bagian aplikasi:
+    ".scratch/**",
   ]),
 ]);
 

@@ -431,7 +431,7 @@ export const HomeView: React.FC = () => {
               {/* Quote Box */}
               <div className="bg-[#17110C] p-5 rounded-2xl border border-[#3F2D23] relative">
                 <p className="text-xs text-[#F8F4EC] italic leading-relaxed">
-                  "Kue puthu yang enak itu bunyinya nyaring saat suwit. Bambu melengking, aromanya memanggil dari kejauhan. Dan manis arennya tidak pernah menyengat di tenggorokan. Rasa itulah yang kami jaga sejak sembilan dekade lalu."
+                  &ldquo;Kue puthu yang enak itu bunyinya nyaring saat suwit. Bambu melengking, aromanya memanggil dari kejauhan. Dan manis arennya tidak pernah menyengat di tenggorokan. Rasa itulah yang kami jaga sejak sembilan dekade lalu.&rdquo;
                 </p>
                 <div className="mt-3 flex items-center gap-2">
                   <div className="w-7 h-7 rounded-full bg-[#2E7D32] text-white font-bold text-xs flex items-center justify-center">

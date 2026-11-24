@@ -41,7 +41,7 @@ export const AuthModal: React.FC = () => {
       setUser(data.user, data.token);
       addToast(data.message || 'Berhasil masuk ke akun!', 'success');
       setAuthModal(false);
-    } catch (err) {
+    } catch {
       setErrorMsg('Gagal terhubung ke server. Coba lagi.');
     } finally {
       setLoading(false);

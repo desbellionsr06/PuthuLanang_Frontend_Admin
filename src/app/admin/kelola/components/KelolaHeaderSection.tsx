@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Utensils, RefreshCw } from 'lucide-react';
+import { BACKEND_URL } from '@/lib/config';
 
 interface KelolaHeaderSectionProps {
   isLoading: boolean;
@@ -50,7 +51,7 @@ export const KelolaHeaderSection: React.FC<KelolaHeaderSectionProps> = ({
       {/* Error banner */}
       {error && (
         <div className="bg-red-900/20 border border-red-700/50 rounded-2xl px-4 py-3 text-xs text-red-300">
-          ⚠️ {error} — Pastikan backend berjalan di <strong>http://localhost:5000</strong>.
+          ⚠️ {error} — Pastikan backend API berjalan dan dapat diakses (<strong>{BACKEND_URL}</strong>).
         </div>
       )}
     </>

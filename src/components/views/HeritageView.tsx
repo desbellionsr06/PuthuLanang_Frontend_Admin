@@ -1,11 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useStore } from '@/store/useStore';
-import {  } from 'lucide-react';
 
 export const HeritageView: React.FC = () => {
-  const { setActiveView } = useStore();
 
   const stats = [
     { value: '1935', label: 'TAHUN BERDIRI' },
@@ -104,7 +101,7 @@ export const HeritageView: React.FC = () => {
                     ALMARHUM PENDIRI
                   </span>
                   <p className="text-xs text-[#F8F4EC] italic mt-0.5">
-                    "Kelezatan sejati lahir dari kesabaran mengukus dan ketulusan hati melayani."
+                    &ldquo;Kelezatan sejati lahir dari kesabaran mengukus dan ketulusan hati melayani.&rdquo;
                   </p>
                 </div>
               </div>
