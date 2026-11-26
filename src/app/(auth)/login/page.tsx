@@ -1,13 +1,15 @@
 // Route: /login
 // Berada di dalam Route Group (auth) — folder ini tidak memengaruhi URL path.
-// Login admin menggunakan Google OAuth (Auth.js / NextAuth v5).
+// Login admin mendukung Username & Password serta Google OAuth (Auth.js / NextAuth v5).
 
 import { redirect } from 'next/navigation';
 import { Flame, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { auth, signIn } from '@/auth';
+import { CredentialsLoginForm } from './CredentialsLoginForm';
 
 const ERROR_MESSAGES: Record<string, string> = {
   AccessDenied: 'Akses ditolak: Dashboard hanya dapat diakses oleh akun admin terdaftar (maks. 3 akun).',
+  CredentialsSignin: 'Username atau password salah. Silakan periksa kembali.',
   Configuration: 'Konfigurasi autentikasi server belum lengkap. Hubungi developer.',
   Verification: 'Tautan verifikasi tidak valid atau sudah kedaluwarsa.',
 };
@@ -59,12 +61,12 @@ export default async function AdminLoginPage({
             ADMIN MANAGEMENT SYSTEM
           </p>
           <p className="text-xs text-[#C5B8A8] pt-1">
-            Silakan masuk dengan akun Google admin untuk mengelola pesanan, stok, dan menu jajanan.
+            Silakan masuk dengan akun admin atau akun Google terdaftar untuk mengelola pesanan, stok, dan menu jajanan.
           </p>
         </div>
 
         <div className="space-y-4 relative z-10">
-          {/* Error message */}
+          {/* Error message dari OAuth / redirect */}
           {errorMsg && (
             <div
               role="alert"
@@ -74,6 +76,18 @@ export default async function AdminLoginPage({
               <span>{errorMsg}</span>
             </div>
           )}
+
+          {/* Manual Admin Login (Username & Password) */}
+          <CredentialsLoginForm redirectTo={redirectTo} />
+
+          {/* Pembatas "atau" */}
+          <div className="flex items-center gap-3 py-0.5">
+            <div className="h-px flex-1 bg-[#3E2C22]" />
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#C5B8A8]/75">
+              atau
+            </span>
+            <div className="h-px flex-1 bg-[#3E2C22]" />
+          </div>
 
           {/* Google Sign-In (server action) */}
           <form action={handleGoogleSignIn}>

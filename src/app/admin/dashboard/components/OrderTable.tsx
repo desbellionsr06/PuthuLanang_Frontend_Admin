@@ -223,22 +223,6 @@ export const OrderTable: React.FC<OrderTableProps> = ({
         </div>
       )}
 
-      {/* Tombol Footer Lihat Semua / Ringkas */}
-      {totalOrders > 5 && (
-        <div className="text-center pt-2">
-          <button
-            type="button"
-            onClick={() => {
-              setShowAll(!showAll);
-              setCurrentPage(1);
-            }}
-            className="w-full sm:w-auto px-6 py-2.5 bg-[#1E1510] hover:bg-[#3E2C22]/50 border border-[#3E2C22] hover:border-[#D49B42]/60 text-xs font-extrabold text-[#D49B42] hover:text-[#F8F4EC] rounded-xl transition-all active:scale-95 inline-flex items-center justify-center gap-2 cursor-pointer shadow-md"
-          >
-            <span>{showAll ? 'Tampilkan Ringkas (5 Pesanan) ↑' : `Lihat Semua Pesanan (${totalOrders}) →`}</span>
-          </button>
-        </div>
-      )}
-
       {/* Modal / Dialog Pemilihan Estimasi Waktu Proses (Requirement 4) */}
       {estimatingOrder && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">

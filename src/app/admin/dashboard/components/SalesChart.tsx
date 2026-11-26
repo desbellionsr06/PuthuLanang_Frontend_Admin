@@ -92,10 +92,10 @@ export const SalesChart: React.FC = () => {
     };
   }, [days]);
 
-  // Hitung summary
-  const totalOrders = data.reduce((s, d) => s + d.total_orders, 0);
-  const totalRevenue = data.reduce((s, d) => s + d.total_revenue, 0);
-  const avgOrders = data.length ? (totalOrders / data.length).toFixed(1) : '0';
+  // Hitung summary (aman terhadap null/NaN)
+  const totalOrders = data.reduce((s, d) => s + (Number(d.total_orders) || 0), 0);
+  const totalRevenue = data.reduce((s, d) => s + (Number(d.total_revenue) || 0), 0);
+  const avgOrders = data.length > 0 ? (totalOrders / data.length).toFixed(1) : '0.0';
 
   return (
     <div className="bg-[#2A1D16] border border-[#3E2C22] rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5">
